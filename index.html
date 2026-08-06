@@ -1,0 +1,1771 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>DPEC Corrientes – Mapa de Demandas Eléctricas Verano 2025/26</title>
+  <meta name="description" content="Mapa interactivo de estaciones transformadoras de la DPEC Corrientes con datos de demanda, estado de carga y flujo de alimentadores. Verano 2025/26." />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+  <style>
+    :root {
+      --bg-dark:    #0d1117;
+      --bg-panel:   #161b22;
+      --bg-card:    #1c2333;
+      --border:     #30363d;
+      --accent:     #58a6ff;
+      --accent2:    #79c0ff;
+      --text-main:  #e6edf3;
+      --text-muted: #8b949e;
+      --green:      #3fb950;
+      --yellow:     #d29922;
+      --orange:     #f0883e;
+      --red:        #f85149;
+      --purple:     #bc8cff;
+      --teal:       #39d353;
+      --radius:     10px;
+      --shadow:     0 8px 32px rgba(0,0,0,0.4);
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: 'Inter', sans-serif;
+      background: var(--bg-dark);
+      color: var(--text-main);
+      height: 100vh;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+    }
+
+    /* ── HEADER ─────────────────────────────────── */
+    header {
+      background: linear-gradient(135deg, #0d1117 0%, #1a2332 100%);
+      border-bottom: 1px solid var(--border);
+      padding: 10px 20px;
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      flex-shrink: 0;
+      z-index: 1000;
+    }
+    .header-logo {
+      width: 40px; height: 40px;
+      background: linear-gradient(135deg, #1f6feb, #58a6ff);
+      border-radius: 8px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 20px; flex-shrink: 0;
+    }
+    .header-title h1 {
+      font-size: 16px; font-weight: 700; color: var(--text-main);
+      letter-spacing: -0.3px;
+    }
+    .header-title p {
+      font-size: 11px; color: var(--text-muted); margin-top: 1px;
+    }
+    .header-stats {
+      margin-left: auto;
+      display: flex; gap: 20px;
+    }
+    .stat-badge {
+      text-align: center;
+    }
+    .stat-badge .val {
+      font-size: 18px; font-weight: 700; color: var(--accent);
+    }
+    .stat-badge .lbl {
+      font-size: 10px; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.5px;
+    }
+
+    /* ── LAYOUT ─────────────────────────────────── */
+    .main-layout {
+      display: flex;
+      flex: 1;
+      overflow: hidden;
+    }
+
+    /* ── SIDEBAR ─────────────────────────────────── */
+    .sidebar {
+      width: 320px;
+      background: var(--bg-panel);
+      border-right: 1px solid var(--border);
+      display: flex;
+      flex-direction: column;
+      flex-shrink: 0;
+      overflow: hidden;
+    }
+
+    .sidebar-header {
+      padding: 14px 16px 10px;
+      border-bottom: 1px solid var(--border);
+    }
+    .sidebar-header h2 {
+      font-size: 12px; font-weight: 600; color: var(--text-muted);
+      text-transform: uppercase; letter-spacing: 0.8px; margin-bottom: 8px;
+    }
+    .search-box {
+      position: relative;
+    }
+    .search-box input {
+      width: 100%;
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      padding: 7px 12px 7px 32px;
+      color: var(--text-main);
+      font-size: 13px;
+      font-family: 'Inter', sans-serif;
+      outline: none;
+      transition: border-color 0.2s;
+    }
+    .search-box input:focus { border-color: var(--accent); }
+    .search-box::before {
+      content: "🔍";
+      position: absolute; left: 8px; top: 50%; transform: translateY(-50%);
+      font-size: 13px; pointer-events: none;
+    }
+
+    /* Filter chips */
+    .filter-chips {
+      padding: 8px 16px;
+      display: flex; flex-wrap: wrap; gap: 5px;
+      border-bottom: 1px solid var(--border);
+    }
+    .chip {
+      padding: 3px 10px;
+      border-radius: 20px;
+      font-size: 11px; font-weight: 500;
+      cursor: pointer;
+      border: 1px solid transparent;
+      transition: all 0.15s;
+      user-select: none;
+    }
+    .chip.all   { background: rgba(88,166,255,.15); color: var(--accent); border-color: rgba(88,166,255,.4); }
+    .chip.green { background: rgba(63,185,80,.12); color: var(--green); border-color: rgba(63,185,80,.35); }
+    .chip.yellow{ background: rgba(210,153,34,.12); color: var(--yellow); border-color: rgba(210,153,34,.35); }
+    .chip.orange{ background: rgba(240,136,62,.12); color: var(--orange); border-color: rgba(240,136,62,.35); }
+    .chip.red   { background: rgba(248,81,73,.12); color: var(--red); border-color: rgba(248,81,73,.35); }
+    .chip.active, .chip:hover { opacity: 1; filter: brightness(1.2); }
+    .chip:not(.active) { opacity: 0.6; }
+
+    /* ET list */
+    .et-list {
+      flex: 1;
+      overflow-y: auto;
+      padding: 6px 0;
+    }
+    .et-list::-webkit-scrollbar { width: 4px; }
+    .et-list::-webkit-scrollbar-track { background: transparent; }
+    .et-list::-webkit-scrollbar-thumb { background: var(--border); border-radius: 4px; }
+
+    .et-item {
+      padding: 10px 16px;
+      cursor: pointer;
+      border-left: 3px solid transparent;
+      transition: all 0.15s;
+      border-bottom: 1px solid rgba(255,255,255,.03);
+    }
+    .et-item:hover { background: rgba(255,255,255,.04); }
+    .et-item.active { background: rgba(88,166,255,.08); border-left-color: var(--accent); }
+    .et-item.hidden { display: none; }
+    .et-item-header {
+      display: flex; align-items: center; gap: 8px; margin-bottom: 4px;
+    }
+    .et-dot {
+      width: 10px; height: 10px; border-radius: 50%; flex-shrink: 0;
+    }
+    .et-name {
+      font-size: 13px; font-weight: 500; color: var(--text-main);
+      flex: 1; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+    }
+    .et-load-badge {
+      font-size: 11px; font-weight: 600; padding: 2px 7px;
+      border-radius: 12px;
+    }
+    .et-meta {
+      font-size: 11px; color: var(--text-muted); margin-left: 18px;
+      display: flex; gap: 8px; flex-wrap: wrap;
+    }
+    .et-coords {
+      font-size: 10px; color: var(--text-muted); margin-left: 18px; margin-top: 2px;
+      font-family: 'Courier New', monospace;
+      opacity: 0.8;
+    }
+
+    /* ── MAP AREA ─────────────────────────────────── */
+    .map-container {
+      flex: 1;
+      position: relative;
+    }
+    #map {
+      width: 100%; height: 100%;
+      background: #0d1117;
+    }
+
+    /* ── INFO PANEL ─────────────────────────────────── */
+    .info-panel {
+      position: absolute;
+      top: 12px; right: 12px;
+      width: 390px;
+      background: rgba(22,27,34,0.96);
+      backdrop-filter: blur(12px);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      z-index: 500;
+      max-height: calc(100vh - 100px);
+      overflow-y: auto;
+      display: none;
+      animation: slideIn 0.2s ease;
+    }
+    .info-panel.visible { display: block; }
+    @keyframes slideIn {
+      from { opacity:0; transform: translateX(10px); }
+      to   { opacity:1; transform: translateX(0); }
+    }
+    .info-panel::-webkit-scrollbar { width: 4px; }
+    .info-panel::-webkit-scrollbar-thumb { background: var(--border); border-radius: 4px; }
+
+    .info-panel-header {
+      padding: 14px 16px 10px;
+      border-bottom: 1px solid var(--border);
+      display: flex; align-items: flex-start; gap: 10px;
+    }
+    .info-panel-icon {
+      width: 36px; height: 36px; border-radius: 8px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 18px; flex-shrink: 0; margin-top: 1px;
+    }
+    .info-panel-title h3 {
+      font-size: 14px; font-weight: 700; color: var(--text-main);
+      line-height: 1.3;
+    }
+    .info-panel-title .subtitle {
+      font-size: 11px; color: var(--text-muted); margin-top: 2px;
+    }
+    .info-close {
+      margin-left: auto; cursor: pointer; color: var(--text-muted);
+      font-size: 18px; line-height: 1; flex-shrink: 0;
+      transition: color 0.15s;
+    }
+    .info-close:hover { color: var(--text-main); }
+
+    .info-section {
+      padding: 12px 16px;
+      border-bottom: 1px solid rgba(255,255,255,.05);
+    }
+    .info-section-title {
+      font-size: 10px; font-weight: 600; color: var(--text-muted);
+      text-transform: uppercase; letter-spacing: 0.8px; margin-bottom: 8px;
+    }
+
+    /* Location / coordinates box */
+    .info-location {
+      display: flex; align-items: center; gap: 10px;
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      padding: 10px 12px;
+    }
+    .info-location-icon {
+      font-size: 18px; flex-shrink: 0;
+    }
+    .info-location-text {
+      flex: 1;
+    }
+    .info-location-label {
+      font-size: 10px; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.5px;
+    }
+    .info-location-coords {
+      font-size: 12px; font-weight: 600; color: var(--accent2);
+      font-family: 'Courier New', monospace;
+      margin-top: 2px;
+    }
+
+    /* Load gauge */
+    .load-gauge {
+      margin-bottom: 10px;
+    }
+    .load-gauge-header {
+      display: flex; align-items: center; justify-content: space-between; margin-bottom: 5px;
+    }
+    .load-gauge-label { font-size: 12px; color: var(--text-muted); }
+    .load-gauge-val   { font-size: 20px; font-weight: 700; }
+    .load-bar {
+      height: 8px; border-radius: 4px;
+      background: rgba(255,255,255,.08);
+      overflow: hidden;
+    }
+    .load-bar-fill {
+      height: 100%; border-radius: 4px;
+      transition: width 0.6s cubic-bezier(.4,0,.2,1);
+    }
+
+    /* Stats grid */
+    .stats-grid {
+      display: grid; grid-template-columns: 1fr 1fr; gap: 8px;
+    }
+    .stat-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      padding: 8px 10px;
+    }
+    .stat-card .sc-val {
+      font-size: 16px; font-weight: 700; color: var(--text-main);
+    }
+    .stat-card .sc-lbl {
+      font-size: 10px; color: var(--text-muted); margin-top: 1px;
+    }
+
+    /* Feeder list */
+    .feeder-list { display: flex; flex-direction: column; gap: 4px; }
+    .feeder-item {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      padding: 7px 10px;
+      display: flex; align-items: center; gap: 8px;
+    }
+    .feeder-tension {
+      font-size: 9px; font-weight: 600; padding: 2px 5px; border-radius: 4px;
+      flex-shrink: 0;
+    }
+    .feeder-tension.kv33  { background: rgba(88,166,255,.18); color: var(--accent); }
+    .feeder-tension.kv132 { background: rgba(188,140,255,.18); color: var(--purple); }
+    .feeder-tension.kv13  { background: rgba(63,185,80,.18); color: var(--green); }
+    .feeder-name {
+      font-size: 11px; color: var(--text-main); flex: 1;
+      white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+    }
+    .feeder-current {
+      font-size: 12px; font-weight: 600; color: var(--accent2); flex-shrink: 0;
+    }
+    .feeder-bar {
+      width: 40px; height: 4px; border-radius: 2px; background: rgba(255,255,255,.08); flex-shrink: 0;
+    }
+    .feeder-bar-fill { height: 100%; border-radius: 2px; }
+
+    /* ── LEGEND ─────────────────────────────────── */
+    .legend {
+      position: absolute;
+      bottom: 24px; left: 12px;
+      background: rgba(22,27,34,0.95);
+      backdrop-filter: blur(10px);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 12px 14px;
+      z-index: 500;
+      min-width: 160px;
+    }
+    .legend-title {
+      font-size: 10px; font-weight: 600; color: var(--text-muted);
+      text-transform: uppercase; letter-spacing: 0.7px; margin-bottom: 8px;
+    }
+    .legend-item {
+      display: flex; align-items: center; gap: 8px;
+      margin-bottom: 6px; font-size: 12px; color: var(--text-main);
+    }
+    .legend-dot {
+      width: 12px; height: 12px; border-radius: 50%;
+      border: 2px solid rgba(255,255,255,.3); flex-shrink: 0;
+    }
+
+    /* ── MAP CONTROLS ─────────────────────────────── */
+    .map-controls {
+      position: absolute;
+      bottom: 24px; right: 12px;
+      display: flex; flex-direction: column; gap: 6px;
+      z-index: 500;
+    }
+    .ctrl-btn {
+      background: rgba(22,27,34,0.95);
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      padding: 8px 12px;
+      cursor: pointer;
+      font-size: 12px; font-weight: 500; color: var(--text-main);
+      transition: all 0.15s;
+      backdrop-filter: blur(10px);
+    }
+    .ctrl-btn:hover {
+      background: rgba(88,166,255,.15);
+      border-color: rgba(88,166,255,.4);
+      color: var(--accent);
+    }
+    .ctrl-btn.active {
+      background: rgba(88,166,255,.18);
+      border-color: var(--accent);
+      color: var(--accent);
+    }
+
+    /* Leaflet custom overrides */
+    .leaflet-container { background: #0d1117; }
+    .leaflet-control-zoom { display: none; }
+    .leaflet-control-attribution { 
+      background: rgba(13,17,23,0.8) !important; 
+      color: #6e7681 !important; font-size: 9px;
+    }
+    .leaflet-control-attribution a { color: #58a6ff !important; }
+
+    /* Custom ET Marker */
+    .et-marker {
+      display: flex; align-items: center; justify-content: center;
+      border-radius: 50%;
+      border: 2.5px solid rgba(255,255,255,.3);
+      box-shadow: 0 0 12px rgba(0,0,0,.5);
+      cursor: pointer;
+      transition: transform 0.2s, box-shadow 0.2s;
+      font-weight: 700; color: white; font-size: 9px;
+      font-family: 'Inter', sans-serif;
+    }
+    .et-marker:hover {
+      transform: scale(1.2);
+      box-shadow: 0 0 20px rgba(0,0,0,.7);
+      z-index: 9999 !important;
+    }
+
+    /* Pulse animation for critical */
+    @keyframes pulse-ring {
+      0%   { transform: scale(1);    opacity: 0.8; }
+      70%  { transform: scale(1.6);  opacity: 0; }
+      100% { transform: scale(1.6);  opacity: 0; }
+    }
+    .et-marker-critical::before {
+      content: '';
+      position: absolute;
+      width: 100%; height: 100%;
+      border-radius: 50%;
+      background: rgba(248,81,73,0.4);
+      animation: pulse-ring 1.5s ease-out infinite;
+    }
+
+    /* Tooltip */
+    .et-tooltip {
+      background: var(--bg-panel) !important;
+      border: 1px solid var(--border) !important;
+      border-radius: 6px !important;
+      color: var(--text-main) !important;
+      font-family: 'Inter', sans-serif !important;
+      font-size: 12px !important;
+      padding: 8px 12px !important;
+      white-space: nowrap;
+      box-shadow: 0 4px 16px rgba(0,0,0,.5) !important;
+    }
+    .et-tooltip .tooltip-coords {
+      font-family: 'Courier New', monospace !important;
+      font-size: 10px !important;
+      color: var(--accent2) !important;
+      margin-top: 3px;
+      padding-top: 3px;
+      border-top: 1px solid var(--border) !important;
+    }
+    .et-tooltip::before { display: none; }
+
+    /* Feeder line animation */
+    @keyframes dash-anim {
+      to { stroke-dashoffset: -20; }
+    }
+
+    /* Loading overlay */
+    .loading {
+      position: fixed; inset: 0;
+      background: var(--bg-dark);
+      display: flex; align-items: center; justify-content: center;
+      z-index: 9999;
+      flex-direction: column; gap: 16px;
+    }
+    .loading-spinner {
+      width: 48px; height: 48px;
+      border: 3px solid var(--border);
+      border-top-color: var(--accent);
+      border-radius: 50%;
+      animation: spin 0.8s linear infinite;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+    .loading p { color: var(--text-muted); font-size: 14px; }
+  </style>
+</head>
+<body>
+
+<div class="loading" id="loading">
+  <div class="loading-spinner"></div>
+  <p>Cargando mapa eléctrico…</p>
+</div>
+
+<!-- ══ HEADER ══════════════════════════════════ -->
+<header>
+  <div class="header-logo">⚡</div>
+  <div class="header-title">
+    <h1>DPEC Corrientes – Red de Distribución Eléctrica</h1>
+    <p>Demandas Máximas · Verano 2025/26 · Sistema Interconectado Provincial</p>
+  </div>
+  <div class="header-stats" id="headerStats">
+    <div class="stat-badge">
+      <div class="val" id="totalETs">—</div>
+      <div class="lbl">ETs en mapa</div>
+    </div>
+    <div class="stat-badge">
+      <div class="val" id="totalMW">—</div>
+      <div class="lbl">MW Total</div>
+    </div>
+    <div class="stat-badge">
+      <div class="val" id="criticalCount" style="color:var(--red)">—</div>
+      <div class="lbl">Críticas (&gt;90%)</div>
+    </div>
+    <div class="stat-badge">
+      <div class="val" id="totalFeeders">—</div>
+      <div class="lbl">Alimentadores</div>
+    </div>
+  </div>
+</header>
+
+<!-- ══ MAIN LAYOUT ══════════════════════════════════ -->
+<div class="main-layout">
+
+  <!-- ── SIDEBAR ── -->
+  <aside class="sidebar">
+    <div class="sidebar-header">
+      <h2>Estaciones Transformadoras</h2>
+      <div class="search-box">
+        <input type="text" id="searchInput" placeholder="Buscar ET…" />
+      </div>
+    </div>
+    <div class="filter-chips">
+      <span class="chip all active" data-filter="all" onclick="setFilter('all', this)">Todas</span>
+      <span class="chip green" data-filter="green" onclick="setFilter('green', this)">Normal &lt;70%</span>
+      <span class="chip yellow" data-filter="yellow" onclick="setFilter('yellow', this)">Alerta 70-85%</span>
+      <span class="chip orange" data-filter="orange" onclick="setFilter('orange', this)">Riesgo 85-95%</span>
+      <span class="chip red" data-filter="red" onclick="setFilter('red', this)">Crítica &gt;95%</span>
+    </div>
+    <div class="et-list" id="etList"></div>
+  </aside>
+
+  <!-- ── MAP ── -->
+  <div class="map-container">
+    <div id="map"></div>
+
+    <!-- Info panel (floating) -->
+    <div class="info-panel" id="infoPanel">
+      <div class="info-panel-header">
+        <div class="info-panel-icon" id="infoPanelIcon">⚡</div>
+        <div class="info-panel-title">
+          <h3 id="infoPanelName">—</h3>
+          <div class="subtitle" id="infoPanelSub">—</div>
+        </div>
+        <div class="info-close" onclick="closeInfoPanel()" title="Cerrar">✕</div>
+      </div>
+
+      <!-- Location / Coordinates -->
+      <div class="info-section">
+        <div class="info-section-title">📍 Ubicación Geográfica</div>
+        <div class="info-location">
+          <div class="info-location-icon">🌐</div>
+          <div class="info-location-text">
+            <div class="info-location-label">Coordenadas GPS</div>
+            <div class="info-location-coords" id="infoPanelCoords">—</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Load gauge -->
+      <div class="info-section" id="infoLoadSection">
+        <div class="info-section-title">Estado de Carga</div>
+        <div class="load-gauge">
+          <div class="load-gauge-header">
+            <span class="load-gauge-label">Porcentaje de carga</span>
+            <span class="load-gauge-val" id="infoPanelLoad">—</span>
+          </div>
+          <div class="load-bar">
+            <div class="load-bar-fill" id="infoPanelLoadBar" style="width:0%"></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Stats -->
+      <div class="info-section">
+        <div class="info-section-title">Parámetros Eléctricos</div>
+        <div class="stats-grid">
+          <div class="stat-card">
+            <div class="sc-val" id="infoMW">—</div>
+            <div class="sc-lbl">Demanda [MW]</div>
+          </div>
+          <div class="stat-card">
+            <div class="sc-val" id="infoMVA">—</div>
+            <div class="sc-lbl">Cap. Instalada [MVA]</div>
+          </div>
+          <div class="stat-card">
+            <div class="sc-val" id="infoFeeders">—</div>
+            <div class="sc-lbl">Alimentadores</div>
+          </div>
+          <div class="stat-card">
+            <div class="sc-val" id="infoMaxI">—</div>
+            <div class="sc-lbl">I máx [A]</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Feeders -->
+      <div class="info-section" id="infoFeedersSection">
+        <div class="info-section-title">Alimentadores / Distribuidores</div>
+        <div class="feeder-list" id="infoFeederList"></div>
+      </div>
+    </div>
+
+    <!-- Legend -->
+    <div class="legend">
+      <div class="legend-title">Estado de Carga</div>
+      <div class="legend-item"><div class="legend-dot" style="background:#3fb950"></div> Normal &lt; 70%</div>
+      <div class="legend-item"><div class="legend-dot" style="background:#d29922"></div> Alerta 70–85%</div>
+      <div class="legend-item"><div class="legend-dot" style="background:#f0883e"></div> Riesgo 85–95%</div>
+      <div class="legend-item"><div class="legend-dot" style="background:#f85149"></div> Crítica &gt; 95%</div>
+      <div class="legend-item"><div class="legend-dot" style="background:#8b949e"></div> Sin datos</div>
+      <div style="margin-top:10px; padding-top:8px; border-top:1px solid var(--border)">
+        <div class="legend-title">Alimentadores</div>
+        <div class="legend-item"><span style="display:inline-block;width:22px;height:3px;background:#bc8cff;border-radius:2px;margin-right:6px"></span> 132 kV</div>
+        <div class="legend-item"><span style="display:inline-block;width:22px;height:3px;background:#58a6ff;border-radius:2px;margin-right:6px"></span> 33 kV</div>
+        <div class="legend-item"><span style="display:inline-block;width:22px;height:3px;background:#3fb950;border-radius:2px;margin-right:6px"></span> 13.2 kV</div>
+      </div>
+    </div>
+
+    <!-- Map controls -->
+    <div class="map-controls">
+      <button class="ctrl-btn active" id="btnFeeders" onclick="toggleFeeders()">⚡ Alimentadores</button>
+      <button class="ctrl-btn" id="btnHeatmap" onclick="toggleHeatmap()">🌡 Mapa de calor</button>
+      <button class="ctrl-btn" onclick="resetView()">🗺 Vista general</button>
+    </div>
+  </div>
+
+</div>
+
+<script>
+// ═══════════════════════════════════════════════
+//  DATA — Estaciones Transformadoras
+// ═══════════════════════════════════════════════
+const ET_DATA = [
+  // ── Capital (Corrientes ciudad) ───────────────
+  { name: "ET Corrientes Centro", lat: -27.4681, lon: -58.8322, power_mw: 71.4, load_pct: 75.2, total_mva: 100, tension_kv: 132,
+    feeders: [
+      { name: "Alimentador TIA 33 kV", current_A: 329, kv: 33 },
+      { name: "Alimentador 1 13,2 kV", current_A: 234, kv: 13.2 },
+      { name: "Alimentador 2 13,2 kV", current_A: 297, kv: 13.2 },
+      { name: "Alimentador 9 13,2 kV", current_A: 365, kv: 13.2 },
+      { name: "Alimentador 10 13,2 kV", current_A: 401, kv: 13.2 },
+      { name: "Alimentador 11 13,2 kV", current_A: 418, kv: 13.2 },
+      { name: "Alimentador Camba Cua 13,2 kV", current_A: 316, kv: 13.2 },
+      { name: "Alimentador Costanera Sur 13,2 kV", current_A: 143, kv: 13.2 },
+      { name: "Distribuidor 81 13,2 kV", current_A: 124, kv: 13.2 },
+      { name: "Distribuidor 76 13,2 kV", current_A: 34, kv: 13.2 },
+      { name: "Distribuidor 74 13,2 kV", current_A: 32, kv: 13.2 },
+      { name: "Distribuidor 77 13,2 kV", current_A: 108, kv: 13.2 },
+      { name: "Distribuidor 71 13,2 kV", current_A: 107, kv: 13.2 },
+      { name: "Distribuidor 73 13,2 kV", current_A: 83, kv: 13.2 },
+      { name: "Distribuidor 75 13,2 kV", current_A: 38, kv: 13.2 },
+      { name: "Distribuidor 80 13,2 kV", current_A: 20, kv: 13.2 },
+      { name: "Distribuidor 72 13,2 kV", current_A: 64, kv: 13.2 },
+      { name: "Distribuidor 78 13,2 kV", current_A: 90, kv: 13.2 },
+      { name: "Distribuidor 70 13,2 kV", current_A: 74, kv: 13.2 }
+    ],
+    interconnects: ["ET Santa Catalina", "ET Sarmiento", "ET Corrientes Este"]
+  },
+  { name: "ET Santa Catalina", lat: -27.521, lon: -58.8112, power_mw: 125.5, load_pct: 88.0, total_mva: 150, tension_kv: 132,
+    feeders: [
+      { name: "Alimentador Ongay 33 kV", current_A: 214, kv: 33 },
+      { name: "Alimentador Quilmes 33 kV", current_A: 243, kv: 33 },
+      { name: "Alimentador Quintana 33 kV", current_A: 177, kv: 33 },
+      { name: "Alimentador Empedrado 33 kV", current_A: 122, kv: 33 },
+      { name: "Alimentador 17 de Agosto 33 kV", current_A: 260, kv: 33 },
+      { name: "Alimentador Independencia 1 33 kV", current_A: 198, kv: 33 },
+      { name: "Alimentador Independencia 2 33 kV", current_A: 245, kv: 33 },
+      { name: "Alimentador Santa Catalina 1 33 kV", current_A: 74, kv: 33 },
+      { name: "Distribuidor 13 13,2 kV", current_A: 103, kv: 13.2 },
+      { name: "Distribuidor 14 13,2 kV", current_A: 183, kv: 13.2 },
+      { name: "Alimentador 15 13,2 kV", current_A: 267, kv: 13.2 },
+      { name: "Alimentador 16 13,2 kV", current_A: 302, kv: 13.2 },
+      { name: "Alimentador Quintana 13,2 kV", current_A: 353, kv: 13.2 },
+      { name: "Distribuidor 17 13,2 kV", current_A: 160, kv: 13.2 },
+      { name: "Distribuidor 18 13,2 kV", current_A: 120, kv: 13.2 },
+      { name: "Distribuidor 19 13,2 kV", current_A: 206, kv: 13.2 },
+      { name: "Distribuidor Montaña 1 13,2 kV", current_A: 137, kv: 13.2 },
+      { name: "Distribuidor Montaña 2 13,2 kV", current_A: 165, kv: 13.2 }
+    ],
+    interconnects: ["ET Corrientes Centro", "ET Sarmiento", "ET Empedrado"]
+  },
+  { name: "ET Sarmiento", lat: -27.4863, lon: -58.831, power_mw: 37.3, load_pct: 78.5, total_mva: 50, tension_kv: 132,
+    feeders: [
+      { name: "Alimentador Sargento Cabral 33 kV", current_A: 168, kv: 33 },
+      { name: "Distribuidor Av. Costanera Norte 13,2 kV", current_A: 210, kv: 13.2 },
+      { name: "Distribuidor Av. Ferré 13,2 kV", current_A: 182, kv: 13.2 },
+      { name: "Distribuidor Ruta 12 Norte 13,2 kV", current_A: 95, kv: 13.2 }
+    ],
+    interconnects: ["ET Corrientes Centro", "ET Santa Catalina"]
+  },
+  { name: "ET Corrientes Este", lat: -27.4696, lon: -58.7775, power_mw: 104.0, load_pct: 84.2, total_mva: 130, tension_kv: 132,
+    feeders: [
+      { name: "Alimentador San Luis 33 kV", current_A: 180, kv: 33 },
+      { name: "Alimentador Wallmart 33 kV", current_A: 387, kv: 33 },
+      { name: "Alimentador Tipoiti 1 33 kV", current_A: 263, kv: 33 },
+      { name: "Alimentador Tipoiti 2 33 kV", current_A: 375, kv: 33 },
+      { name: "Alimentador Golf-Santa Ana 33 kV", current_A: 139, kv: 33 },
+      { name: "Alimentador Molina Punta 33 kV", current_A: 171, kv: 33 },
+      { name: "Distribuidor UNNE 13,2 kV", current_A: 139, kv: 13.2 },
+      { name: "Distribuidor 201 13,2 kV", current_A: 120, kv: 13.2 },
+      { name: "Distribuidor 202 13,2 kV", current_A: 184, kv: 13.2 },
+      { name: "Distribuidor 204 13,2 kV", current_A: 164, kv: 13.2 },
+      { name: "Distribuidor 205 13,2 kV", current_A: 190, kv: 13.2 },
+      { name: "Distribuidor 206 13,2 kV", current_A: 44, kv: 13.2 }
+    ],
+    interconnects: ["ET Corrientes Centro", "ET Pirayu", "ET Golf Club", "ET Laguna Brava"]
+  },
+  { name: "ET Pirayu", lat: -27.3225, lon: -58.5668, power_mw: 27.0, load_pct: 94.7, total_mva: 30, tension_kv: 132,
+    feeders: [
+      { name: "Alimentador Linea Aerea 33 kV", current_A: 97, kv: 33 },
+      { name: "Alimentador 2 San Luis 33 kV", current_A: 147, kv: 33 },
+      { name: "Reconectador San Cosme 33 kV", current_A: 73, kv: 33 },
+      { name: "Distribuidor 2 Rincon 13,2 kV", current_A: 204, kv: 13.2 },
+      { name: "Distribuidor 3 Cabaña 13,2 kV", current_A: 215, kv: 13.2 },
+      { name: "Distribuidor 4 Centro 13,2 kV", current_A: 213, kv: 13.2 },
+      { name: "Distribuidor 5 Rutas 98 y 12 13,2 kV", current_A: 86, kv: 13.2 }
+    ],
+    interconnects: ["ET Corrientes Este", "ET Itati", "ET San Luis del Palmar"]
+  },
+  { name: "ET Golf Club", lat: -27.4542, lon: -58.7221, power_mw: 3.8, load_pct: 40.0, total_mva: 10, tension_kv: 33,
+    feeders: [
+      { name: "Distribuidor Ciudad 13,2 kV", current_A: 75, kv: 13.2 },
+      { name: "Distribuidor Ruta y Perichon 13,2 kV", current_A: 72, kv: 13.2 },
+      { name: "Distribuidor Laguna Pueblo 13,2 kV", current_A: 24, kv: 13.2 }
+    ],
+    interconnects: ["ET Corrientes Este", "ET Laguna Brava"]
+  },
+  { name: "ET Laguna Brava", lat: -27.4883, lon: -58.7528, power_mw: 3.9, load_pct: 83.0, total_mva: 5, tension_kv: 33,
+    feeders: [
+      { name: "Alimentador Carpincho 33 kV", current_A: 45, kv: 33 },
+      { name: "Alimentador Carcel 33 kV", current_A: 27, kv: 33 },
+      { name: "Distribuidor 1 Sapucay 13,2 kV", current_A: 169, kv: 13.2 },
+      { name: "Distribuidor 2 Yaguarete 13,2 kV", current_A: 7, kv: 13.2 }
+    ],
+    interconnects: ["ET Corrientes Este", "ET Golf Club"]
+  },
+  { name: "ET San Luisito", lat: -27.5059, lon: -58.5742, power_mw: 1.6, load_pct: 69.6, total_mva: 2.5, tension_kv: 33,
+    feeders: [
+      { name: "Distribuidor San Luisito 13,2 kV", current_A: 72, kv: 13.2 }
+    ],
+    interconnects: ["ET Pirayu", "ET San Luis del Palmar"]
+  },
+  { name: "ET San Luis del Palmar", lat: -27.505, lon: -58.5543, power_mw: 3.7, load_pct: 78.7, total_mva: 5, tension_kv: 33,
+    feeders: [
+      { name: "Distribuidor Ex desmotadora 13,2 kV", current_A: 168, kv: 13.2 }
+    ],
+    interconnects: ["ET Pirayu", "ET San Luisito"]
+  },
+  { name: "ET Itati", lat: -27.2829, lon: -58.2416, power_mw: 4.0, load_pct: 85.1, total_mva: 5, tension_kv: 33,
+    feeders: [
+      { name: "Distribuidor 1 Pueblo 13,2 kV", current_A: 181, kv: 13.2 },
+      { name: "Distribuidor 2 13,2 kV", current_A: 46, kv: 13.2 }
+    ],
+    interconnects: ["ET Pirayu"]
+  },
+  { name: "ET Empedrado", lat: -27.9372, lon: -58.8079, power_mw: 8.6, load_pct: 60.1, total_mva: 15, tension_kv: 33,
+    feeders: [
+      { name: "Distribuidor Empedrado 1 13,2 kV", current_A: 138, kv: 13.2 },
+      { name: "Distribuidor Empedrado 2 13,2 kV", current_A: 180, kv: 13.2 },
+      { name: "Distribuidor Rural 13,2 kV", current_A: 42, kv: 13.2 }
+    ],
+    interconnects: ["ET Santa Catalina", "ET Bella Vista"]
+  },
+
+  // ── Centros de Distribución Capital ──────────
+  { name: "CD N°3", lat: -27.4796, lon: -58.8329, power_mw: 13.4, load_pct: 93.7, total_mva: 15, tension_kv: 33,
+    feeders: [
+      { name: "Alimentador Sargento Cabral 33 kV", current_A: 213, kv: 33 },
+      { name: "Distribuidor Av. 3 de Abril 13,2 kV", current_A: 178, kv: 13.2 },
+      { name: "Distribuidor Av. Maipú 13,2 kV", current_A: 156, kv: 13.2 },
+      { name: "Distribuidor San Martín Norte 13,2 kV", current_A: 134, kv: 13.2 },
+      { name: "Distribuidor Junín 13,2 kV", current_A: 110, kv: 13.2 },
+      { name: "Distribuidor Mendoza 13,2 kV", current_A: 87, kv: 13.2 },
+      { name: "Distribuidor Ferre-Arbo 13,2 kV", current_A: 61, kv: 13.2 },
+      { name: "Distribuidor La Rioja 13,2 kV", current_A: 48, kv: 13.2 },
+      { name: "Distribuidor Chile-Tucumán 13,2 kV", current_A: 32, kv: 13.2 },
+      { name: "Distribuidor Catamarca 13,2 kV", current_A: 27, kv: 13.2 }
+    ],
+    interconnects: ["ET Corrientes Centro", "ET Sarmiento"]
+  },
+  { name: "CD N°5", lat: -27.4908, lon: -58.8082, power_mw: 12.4, load_pct: 62.0, total_mva: 20, tension_kv: 33,
+    feeders: [
+      { name: "Alimentador Libertad 33 kV", current_A: 185, kv: 33 },
+      { name: "Distribuidor España 13,2 kV", current_A: 155, kv: 13.2 },
+      { name: "Distribuidor Rivadavia 13,2 kV", current_A: 140, kv: 13.2 },
+      { name: "Distribuidor Av. Vera 13,2 kV", current_A: 118, kv: 13.2 },
+      { name: "Distribuidor B°Jardín 13,2 kV", current_A: 95, kv: 13.2 },
+      { name: "Distribuidor Independencia Sur 13,2 kV", current_A: 73, kv: 13.2 }
+    ],
+    interconnects: ["ET Corrientes Centro"]
+  },
+  { name: "CD N°6", lat: -27.5079, lon: -58.7888, power_mw: 10.1, load_pct: 76.0, total_mva: 14, tension_kv: 33,
+    feeders: [
+      { name: "Alimentador Ruiz 33 kV", current_A: 162, kv: 33 },
+      { name: "Distribuidor Av. Poncho Verde 13,2 kV", current_A: 148, kv: 13.2 },
+      { name: "Distribuidor Punta Mitre 13,2 kV", current_A: 131, kv: 13.2 },
+      { name: "Distribuidor B°Las Mercedes 13,2 kV", current_A: 104, kv: 13.2 },
+      { name: "Distribuidor Ruta 5 Sur 13,2 kV", current_A: 87, kv: 13.2 },
+      { name: "Distribuidor Industrial Sur 13,2 kV", current_A: 61, kv: 13.2 },
+      { name: "Distribuidor B°Ferré 13,2 kV", current_A: 45, kv: 13.2 },
+      { name: "Distribuidor Laguna Este 13,2 kV", current_A: 32, kv: 13.2 }
+    ],
+    interconnects: ["ET Corrientes Este", "ET Corrientes Centro"]
+  },
+  { name: "CD N°7", lat: -27.469, lon: -58.8004, power_mw: 8.7, load_pct: 60.9, total_mva: 15, tension_kv: 33,
+    feeders: [
+      { name: "Alimentador Av. 25 de Mayo 33 kV", current_A: 132, kv: 33 },
+      { name: "Distribuidor Av. Libertad 13,2 kV", current_A: 115, kv: 13.2 },
+      { name: "Distribuidor B°Esperanza 13,2 kV", current_A: 108, kv: 13.2 },
+      { name: "Distribuidor Chaco 1 13,2 kV", current_A: 95, kv: 13.2 },
+      { name: "Distribuidor Chaco 2 13,2 kV", current_A: 82, kv: 13.2 },
+      { name: "Distribuidor San Gerónimo 13,2 kV", current_A: 71, kv: 13.2 },
+      { name: "Distribuidor Pellegrini Norte 13,2 kV", current_A: 59, kv: 13.2 },
+      { name: "Distribuidor Lavalle 13,2 kV", current_A: 47, kv: 13.2 },
+      { name: "Distribuidor Reconquista 13,2 kV", current_A: 38, kv: 13.2 },
+      { name: "Distribuidor Quintana Norte 13,2 kV", current_A: 28, kv: 13.2 },
+      { name: "Distribuidor Uruguay 13,2 kV", current_A: 22, kv: 13.2 },
+      { name: "Distribuidor Mitre 13,2 kV", current_A: 16, kv: 13.2 },
+      { name: "Distribuidor San Lorenzo 13,2 kV", current_A: 11, kv: 13.2 }
+    ],
+    interconnects: ["ET Corrientes Centro"]
+  },
+  { name: "CD N°8", lat: -27.4651, lon: -58.8387, power_mw: 11.0, load_pct: 45.8, total_mva: 25, tension_kv: 33,
+    feeders: [
+      { name: "Alimentador B°Ambigu 33 kV", current_A: 175, kv: 33 },
+      { name: "Distribuidor Av. Centenario 13,2 kV", current_A: 152, kv: 13.2 },
+      { name: "Distribuidor Av. La Paz 13,2 kV", current_A: 135, kv: 13.2 },
+      { name: "Distribuidor Mansilla 13,2 kV", current_A: 118, kv: 13.2 },
+      { name: "Distribuidor Tomás Edison 13,2 kV", current_A: 98, kv: 13.2 },
+      { name: "Distribuidor Villa del Plata 13,2 kV", current_A: 81, kv: 13.2 },
+      { name: "Distribuidor Benito Lages 13,2 kV", current_A: 65, kv: 13.2 },
+      { name: "Distribuidor Pujol 13,2 kV", current_A: 48, kv: 13.2 },
+      { name: "Distribuidor Cnel. Gómez 13,2 kV", current_A: 35, kv: 13.2 }
+    ],
+    interconnects: ["ET Corrientes Centro", "ET Santa Catalina"]
+  },
+  { name: "CD N°9", lat: -27.4844, lon: -58.7897, power_mw: 14.3, load_pct: 100.0, total_mva: 15, tension_kv: 33,
+    feeders: [
+      { name: "Alimentador Tipoiti 2 - CD9 33 kV", current_A: 228, kv: 33 },
+      { name: "Distribuidor Av. Clark 13,2 kV", current_A: 210, kv: 13.2 },
+      { name: "Distribuidor B°Camba Cua 13,2 kV", current_A: 193, kv: 13.2 },
+      { name: "Distribuidor Av. Maipú Este 13,2 kV", current_A: 175, kv: 13.2 },
+      { name: "Distribuidor B°Sapucay 13,2 kV", current_A: 158, kv: 13.2 }
+    ],
+    interconnects: ["ET Corrientes Este"]
+  },
+  { name: "CD N°10", lat: -27.4762, lon: -58.8145, power_mw: 9.3, load_pct: 65.0, total_mva: 15, tension_kv: 33,
+    feeders: [
+      { name: "Alimentador Ongay Sur 33 kV", current_A: 148, kv: 33 },
+      { name: "Distribuidor Av. Ferré Centro 13,2 kV", current_A: 130, kv: 13.2 },
+      { name: "Distribuidor B°Lomas 13,2 kV", current_A: 114, kv: 13.2 },
+      { name: "Distribuidor Tacuarí 13,2 kV", current_A: 98, kv: 13.2 },
+      { name: "Distribuidor La Tablada 13,2 kV", current_A: 82, kv: 13.2 }
+    ],
+    interconnects: ["ET Corrientes Centro"]
+  },
+  { name: "CD N°11", lat: -27.4949, lon: -58.8323, power_mw: 13.4, load_pct: 93.7, total_mva: 15, tension_kv: 33,
+    feeders: [
+      { name: "Alimentador Independencia 1 - CD11 33 kV", current_A: 214, kv: 33 },
+      { name: "Distribuidor Sargento Cabral Sur 13,2 kV", current_A: 195, kv: 13.2 },
+      { name: "Distribuidor 11 de Abril 13,2 kV", current_A: 178, kv: 13.2 },
+      { name: "Distribuidor Av. Gómez Morales 13,2 kV", current_A: 162, kv: 13.2 },
+      { name: "Distribuidor B°Cabildo 13,2 kV", current_A: 145, kv: 13.2 }
+    ],
+    interconnects: ["ET Corrientes Centro", "ET Santa Catalina"]
+  },
+  { name: "CD N°12", lat: -27.4728, lon: -58.8408, power_mw: 12.3, load_pct: 86.0, total_mva: 15, tension_kv: 33,
+    feeders: [
+      { name: "Alimentador Av. Costanera N. - CD12 33 kV", current_A: 196, kv: 33 },
+      { name: "Distribuidor Av. Centenario N. 13,2 kV", current_A: 178, kv: 13.2 },
+      { name: "Distribuidor Gob. Díaz Colodrero 13,2 kV", current_A: 158, kv: 13.2 },
+      { name: "Distribuidor Av. Arturo Illia 13,2 kV", current_A: 140, kv: 13.2 },
+      { name: "Distribuidor B°Intercor 13,2 kV", current_A: 122, kv: 13.2 }
+    ],
+    interconnects: ["ET Sarmiento", "ET Corrientes Centro"]
+  },
+  { name: "CD N°13", lat: -27.4658, lon: -58.8296, power_mw: 10.6, load_pct: 74.1, total_mva: 15, tension_kv: 33,
+    feeders: [
+      { name: "Alimentador Quilmes - CD13 33 kV", current_A: 169, kv: 33 },
+      { name: "Distribuidor B°Berón de Astrada 13,2 kV", current_A: 152, kv: 13.2 },
+      { name: "Distribuidor Av. Costanera Cte 13,2 kV", current_A: 135, kv: 13.2 },
+      { name: "Distribuidor Plazoleta Italia 13,2 kV", current_A: 118, kv: 13.2 },
+      { name: "Distribuidor Centro Histórico 13,2 kV", current_A: 101, kv: 13.2 }
+    ],
+    interconnects: ["ET Corrientes Centro"]
+  },
+  { name: "CD N°14", lat: -27.4722, lon: -58.8339, power_mw: 17.5, load_pct: 61.4, total_mva: 30, tension_kv: 33,
+    feeders: [
+      { name: "Alimentador 17 de Agosto - CD14 33 kV", current_A: 280, kv: 33 },
+      { name: "Distribuidor Rivadavia Norte 13,2 kV", current_A: 245, kv: 13.2 },
+      { name: "Distribuidor Pellegrini 13,2 kV", current_A: 218, kv: 13.2 },
+      { name: "Distribuidor San Lorenzo N. 13,2 kV", current_A: 192, kv: 13.2 },
+      { name: "Distribuidor Entre Ríos 13,2 kV", current_A: 167, kv: 13.2 },
+      { name: "Distribuidor Córdoba Cte. 13,2 kV", current_A: 143, kv: 13.2 },
+      { name: "Distribuidor Tucumán 13,2 kV", current_A: 118, kv: 13.2 },
+      { name: "Distribuidor Mendoza N. 13,2 kV", current_A: 95, kv: 13.2 }
+    ],
+    interconnects: ["ET Santa Catalina", "ET Corrientes Centro"]
+  },
+  { name: "CD N°15", lat: -27.5009, lon: -58.8438, power_mw: 13.3, load_pct: 93.0, total_mva: 15, tension_kv: 33,
+    feeders: [
+      { name: "Alimentador Av. Quintana S. 33 kV", current_A: 212, kv: 33 },
+      { name: "Distribuidor B°San Gerónimo Sur 13,2 kV", current_A: 194, kv: 13.2 },
+      { name: "Distribuidor Av. Las Heras 13,2 kV", current_A: 176, kv: 13.2 },
+      { name: "Distribuidor B°Yapeyú 13,2 kV", current_A: 158, kv: 13.2 },
+      { name: "Distribuidor Av. Mitre Sur 13,2 kV", current_A: 140, kv: 13.2 }
+    ],
+    interconnects: ["ET Santa Catalina", "ET Corrientes Centro"]
+  },
+  { name: "CD N°16", lat: -27.4721, lon: -58.8059, power_mw: 12.4, load_pct: 86.7, total_mva: 15, tension_kv: 33,
+    feeders: [
+      { name: "Alimentador Tipoiti 1 - CD16 33 kV", current_A: 198, kv: 33 },
+      { name: "Distribuidor B°Santa Teresita 13,2 kV", current_A: 180, kv: 13.2 },
+      { name: "Distribuidor Av. Maipú 2 13,2 kV", current_A: 163, kv: 13.2 },
+      { name: "Distribuidor B°Cacique Mbará 13,2 kV", current_A: 146, kv: 13.2 },
+      { name: "Distribuidor Ruta 5 Este 13,2 kV", current_A: 128, kv: 13.2 },
+      { name: "Distribuidor B°Paloma 13,2 kV", current_A: 112, kv: 13.2 }
+    ],
+    interconnects: ["ET Corrientes Este"]
+  },
+  { name: "CD N°21", lat: -27.47, lon: -58.8242, power_mw: 9.4, load_pct: 49.5, total_mva: 20, tension_kv: 33,
+    feeders: [
+      { name: "Alimentador Santa Catalina 2 33 kV", current_A: 150, kv: 33 },
+      { name: "Distribuidor Av. Sarmiento 13,2 kV", current_A: 132, kv: 13.2 },
+      { name: "Distribuidor Mendoza Oeste 13,2 kV", current_A: 118, kv: 13.2 },
+      { name: "Distribuidor Catamarca Sur 13,2 kV", current_A: 103, kv: 13.2 }
+    ],
+    interconnects: ["ET Corrientes Centro", "ET Santa Catalina"]
+  },
+  { name: "CD N°22", lat: -27.4724, lon: -58.8453, power_mw: 6.9, load_pct: 69.0, total_mva: 10, tension_kv: 33,
+    feeders: [
+      { name: "Alimentador Av. Centenario N.O. 33 kV", current_A: 110, kv: 33 },
+      { name: "Distribuidor Ruta 12 N.O. 13,2 kV", current_A: 98, kv: 13.2 },
+      { name: "Distribuidor B°Esperanza Oeste 13,2 kV", current_A: 86, kv: 13.2 },
+      { name: "Distribuidor Av. Pujol Norte 13,2 kV", current_A: 72, kv: 13.2 },
+      { name: "Distribuidor Av. Arbo y Blanco 13,2 kV", current_A: 58, kv: 13.2 }
+    ],
+    interconnects: ["ET Sarmiento"]
+  },
+  { name: "CD N°24", lat: -27.4804, lon: -58.8472, power_mw: 10.9, load_pct: 57.4, total_mva: 20, tension_kv: 33,
+    feeders: [
+      { name: "Alimentador Empedrado - CD24 33 kV", current_A: 174, kv: 33 },
+      { name: "Distribuidor B°Mil Viviendas 13,2 kV", current_A: 158, kv: 13.2 },
+      { name: "Distribuidor B°Barranqueras 13,2 kV", current_A: 141, kv: 13.2 },
+      { name: "Distribuidor Av. Jujuy 13,2 kV", current_A: 125, kv: 13.2 },
+      { name: "Distribuidor Av. Vera Sur 13,2 kV", current_A: 109, kv: 13.2 }
+    ],
+    interconnects: ["ET Santa Catalina"]
+  },
+  { name: "CD N°25", lat: -27.4916, lon: -58.8189, power_mw: 12.1, load_pct: 84.6, total_mva: 15, tension_kv: 33,
+    feeders: [
+      { name: "Alimentador Molina Punta - CD25 33 kV", current_A: 193, kv: 33 },
+      { name: "Distribuidor Av. Gobernador Pujol 13,2 kV", current_A: 175, kv: 13.2 },
+      { name: "Distribuidor B°Laguna Sur 13,2 kV", current_A: 158, kv: 13.2 },
+      { name: "Distribuidor Av. Sarmiento S. 13,2 kV", current_A: 141, kv: 13.2 },
+      { name: "Distribuidor B°Villa del Sur 13,2 kV", current_A: 124, kv: 13.2 }
+    ],
+    interconnects: ["ET Corrientes Este", "ET Corrientes Centro"]
+  },
+  { name: "CD N°26", lat: -27.4727, lon: -58.8424, power_mw: 6.3, load_pct: 66.3, total_mva: 10, tension_kv: 33,
+    feeders: [
+      { name: "Alimentador Av. Ferré N. 33 kV", current_A: 100, kv: 33 },
+      { name: "Distribuidor B°Ciudad Universitaria 13,2 kV", current_A: 88, kv: 13.2 },
+      { name: "Distribuidor Av. Artigas N. 13,2 kV", current_A: 76, kv: 13.2 }
+    ],
+    interconnects: ["ET Sarmiento"]
+  },
+  { name: "CD N°27", lat: -27.47, lon: -58.8424, power_mw: 11.6, load_pct: 81.2, total_mva: 15, tension_kv: 33,
+    feeders: [
+      { name: "Alimentador Independencia 2 - CD27 33 kV", current_A: 185, kv: 33 },
+      { name: "Distribuidor B°San Martín Sur 13,2 kV", current_A: 167, kv: 13.2 },
+      { name: "Distribuidor Av. 3 de Abril N. 13,2 kV", current_A: 150, kv: 13.2 },
+      { name: "Distribuidor Av. Costanera O. 13,2 kV", current_A: 132, kv: 13.2 },
+      { name: "Distribuidor B°San Isidro 13,2 kV", current_A: 115, kv: 13.2 }
+    ],
+    interconnects: ["ET Santa Catalina"]
+  },
+  { name: "CD N°28", lat: -27.521, lon: -58.8112, power_mw: 4.1, load_pct: 28.7, total_mva: 15, tension_kv: 33,
+    feeders: [
+      { name: "Alimentador Sur 33 kV", current_A: 65, kv: 33 },
+      { name: "Distribuidor Av. Cambá Cuá 13,2 kV", current_A: 58, kv: 13.2 },
+      { name: "Distribuidor B°Lomas Sur 13,2 kV", current_A: 52, kv: 13.2 },
+      { name: "Distribuidor Av. Tte. Ibáñez 13,2 kV", current_A: 46, kv: 13.2 },
+      { name: "Distribuidor B°San Cayetano 13,2 kV", current_A: 40, kv: 13.2 }
+    ],
+    interconnects: ["ET Santa Catalina"]
+  },
+
+  // ── Interior de la Provincia ──────────────────
+  { name: "ET Bella Vista", lat: -28.505, lon: -58.748, power_mw: 43.9, load_pct: 89.6, total_mva: 52.5, tension_kv: 132,
+    feeders: [
+      { name: "Alimentador Desmochado 33 kV", current_A: 238, kv: 33 },
+      { name: "Alimentador San Roque 33 kV", current_A: 115, kv: 33 },
+      { name: "Alimentador Saladas 33 kV", current_A: 78, kv: 33 },
+      { name: "Alimentador Tansa 33 kV", current_A: 86, kv: 33 },
+      { name: "Distribuidor Ciudad 1 13,2 kV", current_A: 163, kv: 13.2 },
+      { name: "Distribuidor Ciudad 2 13,2 kV", current_A: 151, kv: 13.2 },
+      { name: "Distribuidor Ciudad 3 13,2 kV", current_A: 207, kv: 13.2 },
+      { name: "Distribuidor Rural 13,2 kV", current_A: 119, kv: 13.2 }
+    ],
+    interconnects: ["ET Empedrado", "ET Bella Vista Sur", "ET San Roque", "ET Mburucuya"]
+  },
+  { name: "ET Bella Vista Sur", lat: -28.5234, lon: -59.0453, power_mw: 8.8, load_pct: 92.6, total_mva: 10, tension_kv: 33,
+    feeders: [
+      { name: "Alimentador Salida 33 kV", current_A: 87, kv: 33 },
+      { name: "Distribuidor 1 13,2 kV", current_A: 175, kv: 13.2 },
+      { name: "Distribuidor 2 13,2 kV", current_A: 94, kv: 13.2 },
+      { name: "Distribuidor 3 13,2 kV", current_A: 158, kv: 13.2 }
+    ],
+    interconnects: ["ET Bella Vista"]
+  },
+  { name: "ET Goya", lat: -29.1427, lon: -59.2568, power_mw: 53.3, load_pct: 62.3, total_mva: 90, tension_kv: 132,
+    feeders: [
+      { name: "Alimentador Desmochado 132 kV", current_A: 95, kv: 132 },
+      { name: "Alimentador Carolina 33 kV", current_A: 142, kv: 33 },
+      { name: "Alimentador Parque Industrial 33 kV", current_A: 89, kv: 33 },
+      { name: "Alimentador Ex Central Diesel 33 kV", current_A: 74, kv: 33 },
+      { name: "Alimentador Goya Oeste 33 kV", current_A: 201, kv: 33 },
+      { name: "Alimentador Goya Norte 33 kV", current_A: 156, kv: 33 },
+      { name: "Distribuidor Ciudad 1 13,2 kV", current_A: 215, kv: 13.2 },
+      { name: "Distribuidor Ciudad 2 13,2 kV", current_A: 198, kv: 13.2 },
+      { name: "Distribuidor Ciudad 3 13,2 kV", current_A: 182, kv: 13.2 },
+      { name: "Distribuidor Ciudad 4 13,2 kV", current_A: 165, kv: 13.2 },
+      { name: "Distribuidor Rural Norte 13,2 kV", current_A: 112, kv: 13.2 },
+      { name: "Distribuidor Rural Sur 13,2 kV", current_A: 98, kv: 13.2 }
+    ],
+    interconnects: ["ET Goya Oeste", "ET Goya Norte", "ET Carolina (Goya)", "ET Parque Industrial (Goya)", "ET Ex Central Diesel (Goya)", "ET Esquina"]
+  },
+  { name: "ET Goya Oeste", lat: -29.1714, lon: -59.2926, power_mw: 19.7, load_pct: 69.1, total_mva: 15, tension_kv: 33,
+    feeders: [
+      { name: "Alimentador Goya Oeste 33 kV", current_A: 140, kv: 33 },
+      { name: "Distribuidor B°Hipólito Irigoyen 13,2 kV", current_A: 178, kv: 13.2 },
+      { name: "Distribuidor Av. Corrientes 13,2 kV", current_A: 155, kv: 13.2 },
+      { name: "Distribuidor B°Lomas 13,2 kV", current_A: 134, kv: 13.2 }
+    ],
+    interconnects: ["ET Goya", "ET Carolina (Goya)"]
+  },
+  { name: "ET Goya Norte", lat: -29.1309, lon: -59.2599, power_mw: 8.2, load_pct: 57.3, total_mva: 15, tension_kv: 33,
+    feeders: [
+      { name: "Alimentador Goya Norte 33 kV", current_A: 68, kv: 33 },
+      { name: "Distribuidor Industrial 13,2 kV", current_A: 110, kv: 13.2 },
+      { name: "Distribuidor B°San Cayetano 13,2 kV", current_A: 95, kv: 13.2 },
+      { name: "Distribuidor Rural Norte 13,2 kV", current_A: 82, kv: 13.2 }
+    ],
+    interconnects: ["ET Goya"]
+  },
+  { name: "ET Carolina (Goya)", lat: -29.1623, lon: -59.2484, power_mw: 2.0, load_pct: 42.6, total_mva: 5, tension_kv: 33,
+    feeders: [
+      { name: "Distribuidor B°Carolina 13,2 kV", current_A: 87, kv: 13.2 },
+      { name: "Distribuidor Rural Carolina 13,2 kV", current_A: 54, kv: 13.2 }
+    ],
+    interconnects: ["ET Goya Oeste"]
+  },
+  { name: "ET Parque Industrial (Goya)", lat: -29.1628, lon: -59.2469, power_mw: 0.9, load_pct: 39.1, total_mva: 2.5, tension_kv: 33,
+    feeders: [
+      { name: "Distribuidor Parque Industrial 13,2 kV", current_A: 48, kv: 13.2 }
+    ],
+    interconnects: ["ET Goya"]
+  },
+  { name: "ET Ex Central Diesel (Goya)", lat: -29.1625, lon: -59.2862, power_mw: null, load_pct: null, total_mva: null, tension_kv: 33,
+    feeders: [],
+    interconnects: ["ET Goya", "ET Goya Oeste"]
+  },
+  { name: "ET Esquina", lat: -30.0173, lon: -59.536, power_mw: 19.1, load_pct: 67.1, total_mva: 30, tension_kv: 132,
+    feeders: [
+      { name: "Alimentador Libertador 33 kV", current_A: 152, kv: 33 },
+      { name: "Alimentador Sauce 33 kV", current_A: 89, kv: 33 },
+      { name: "Distribuidor Ciudad 1 13,2 kV", current_A: 165, kv: 13.2 },
+      { name: "Distribuidor Ciudad 2 13,2 kV", current_A: 148, kv: 13.2 },
+      { name: "Distribuidor Rural 1 13,2 kV", current_A: 75, kv: 13.2 },
+      { name: "Distribuidor Rural 2 13,2 kV", current_A: 51, kv: 13.2 }
+    ],
+    interconnects: ["ET Goya", "ET Sauce", "ET Stella Maris"]
+  },
+  { name: "ET Stella Maris", lat: -30.08, lon: -59.47, power_mw: 2.9, load_pct: 40.0, total_mva: 7.5, tension_kv: 33,
+    feeders: [
+      { name: "Distribuidor 1 13,2 kV", current_A: 53, kv: 13.2 },
+      { name: "Distribuidor 2 13,2 kV", current_A: 58, kv: 13.2 },
+      { name: "Distribuidor 3 13,2 kV", current_A: 15, kv: 13.2 }
+    ],
+    interconnects: ["ET Esquina"]
+  },
+  { name: "ET Sauce", lat: -30.0934, lon: -58.8222, power_mw: 4.1, load_pct: 87.2, total_mva: 5, tension_kv: 33,
+    feeders: [
+      { name: "Distribuidor 1 13,2 kV", current_A: 93, kv: 13.2 },
+      { name: "Distribuidor 2 13,2 kV", current_A: 56, kv: 13.2 }
+    ],
+    interconnects: ["ET Esquina"]
+  },
+  { name: "ET Mercedes", lat: -29.0972, lon: -58.3300, power_mw: 41.2, load_pct: 72.3, total_mva: 60, tension_kv: 132,
+    feeders: [
+      { name: "Alimentador Santa Rosa 33 kV", current_A: 178, kv: 33 },
+      { name: "Alimentador San Roque 33 kV", current_A: 134, kv: 33 },
+      { name: "Alimentador Concepcion 33 kV", current_A: 96, kv: 33 },
+      { name: "Alimentador Mburucuya 33 kV", current_A: 72, kv: 33 },
+      { name: "Distribuidor Ciudad 1 13,2 kV", current_A: 215, kv: 13.2 },
+      { name: "Distribuidor Ciudad 2 13,2 kV", current_A: 198, kv: 13.2 },
+      { name: "Distribuidor Ciudad 3 13,2 kV", current_A: 181, kv: 13.2 },
+      { name: "Distribuidor B°Universitario 13,2 kV", current_A: 162, kv: 13.2 },
+      { name: "Distribuidor Rural Norte 13,2 kV", current_A: 95, kv: 13.2 },
+      { name: "Distribuidor Rural Sur 13,2 kV", current_A: 78, kv: 13.2 },
+      { name: "Distribuidor Parque Industrial 13,2 kV", current_A: 55, kv: 13.2 },
+      { name: "Distribuidor Rural Este 13,2 kV", current_A: 38, kv: 13.2 }
+    ],
+    interconnects: ["ET Pellegrini", "ET Santa Rosa", "ET Concepcion", "ET Mburucuya", "ET San Roque", "ET Paso Tala"]
+  },
+  { name: "CD Mercedes", lat: -29.1321, lon: -58.1705, power_mw: 8.6, load_pct: 95.6, total_mva: null, tension_kv: 33,
+    feeders: [
+      { name: "Alimentador CD Mercedes 33 kV", current_A: 137, kv: 33 },
+      { name: "Distribuidor Ciudad Norte 13,2 kV", current_A: 185, kv: 13.2 },
+      { name: "Distribuidor B°Las Palmeras 13,2 kV", current_A: 165, kv: 13.2 },
+      { name: "Distribuidor B°San Cayetano 13,2 kV", current_A: 148, kv: 13.2 },
+      { name: "Distribuidor Rural Mercedes 13,2 kV", current_A: 95, kv: 13.2 }
+    ],
+    interconnects: ["ET Mercedes"]
+  },
+  { name: "ET Pellegrini", lat: -28.5834, lon: -57.2349, power_mw: 0.7, load_pct: 30.4, total_mva: 2.5, tension_kv: 33,
+    feeders: [
+      { name: "Distribuidor Pellegrini 13,2 kV", current_A: 28, kv: 13.2 }
+    ],
+    interconnects: ["ET Mercedes"]
+  },
+  { name: "ET Curuzu Cuatia", lat: -29.804, lon: -58.1345, power_mw: 31.8, load_pct: 74.5, total_mva: 45, tension_kv: 132,
+    feeders: [
+      { name: "Alimentador Belgrano 33 kV", current_A: 154, kv: 33 },
+      { name: "Alimentador Mocoreta 33 kV", current_A: 89, kv: 33 },
+      { name: "Alimentador Paso Tala 33 kV", current_A: 72, kv: 33 },
+      { name: "Distribuidor Ciudad 1 13,2 kV", current_A: 198, kv: 13.2 },
+      { name: "Distribuidor Ciudad 2 13,2 kV", current_A: 181, kv: 13.2 },
+      { name: "Distribuidor Ciudad 3 13,2 kV", current_A: 164, kv: 13.2 },
+      { name: "Distribuidor B°Parque Sur 13,2 kV", current_A: 132, kv: 13.2 },
+      { name: "Distribuidor Rural Norte 13,2 kV", current_A: 95, kv: 13.2 },
+      { name: "Distribuidor Rural Sur 13,2 kV", current_A: 73, kv: 13.2 }
+    ],
+    interconnects: ["ET Belgrano (Curuzu Cuatia)", "ET Monte Caseros", "ET Paso Tala", "ET Mocoreta"]
+  },
+  { name: "ET Belgrano (Curuzu Cuatia)", lat: -29.794, lon: -58.0794, power_mw: 6.5, load_pct: 45.5, total_mva: 15, tension_kv: 33,
+    feeders: [
+      { name: "Distribuidor B°Belgrano 13,2 kV", current_A: 114, kv: 13.2 },
+      { name: "Distribuidor Industrial Curuzu 13,2 kV", current_A: 78, kv: 13.2 }
+    ],
+    interconnects: ["ET Curuzu Cuatia"]
+  },
+  { name: "ET Monte Caseros", lat: -30.2556, lon: -57.6588, power_mw: 30.7, load_pct: 71.9, total_mva: 45, tension_kv: 132,
+    feeders: [
+      { name: "Alimentador TN&Platex 33 kV", current_A: 135, kv: 33 },
+      { name: "Alimentador Mocoreta 33 kV", current_A: 98, kv: 33 },
+      { name: "Alimentador Parada Pucheta 33 kV", current_A: 62, kv: 33 },
+      { name: "Distribuidor Ciudad 1 13,2 kV", current_A: 185, kv: 13.2 },
+      { name: "Distribuidor Ciudad 2 13,2 kV", current_A: 168, kv: 13.2 },
+      { name: "Distribuidor B°Industrial 13,2 kV", current_A: 145, kv: 13.2 },
+      { name: "Distribuidor Rural Norte 13,2 kV", current_A: 98, kv: 13.2 },
+      { name: "Distribuidor Rural Sur 13,2 kV", current_A: 75, kv: 13.2 }
+    ],
+    interconnects: ["ET TN&Platex (Monte Caseros)", "ET Parada Pucheta", "ET Curuzu Cuatia", "ET Paso de los Libres Sur"]
+  },
+  { name: "ET TN&Platex (Monte Caseros)", lat: -30.2556, lon: -57.6264, power_mw: 5.2, load_pct: 57.8, total_mva: 10, tension_kv: 33,
+    feeders: [
+      { name: "Distribuidor TN&Platex 13,2 kV", current_A: 95, kv: 13.2 },
+      { name: "Distribuidor Ind. Frigorífico 13,2 kV", current_A: 68, kv: 13.2 }
+    ],
+    interconnects: ["ET Monte Caseros"]
+  },
+  { name: "ET Paso de los Libres Sur", lat: -29.6364, lon: -57.2661, power_mw: 19.5, load_pct: 68.4, total_mva: 30, tension_kv: 132,
+    feeders: [
+      { name: "Alimentador Libres Norte 33 kV", current_A: 152, kv: 33 },
+      { name: "Alimentador Parada Pucheta 33 kV", current_A: 89, kv: 33 },
+      { name: "Distribuidor Ciudad 1 13,2 kV", current_A: 178, kv: 13.2 },
+      { name: "Distribuidor Ciudad 2 13,2 kV", current_A: 162, kv: 13.2 },
+      { name: "Distribuidor B°Parque Norte 13,2 kV", current_A: 138, kv: 13.2 },
+      { name: "Distribuidor Rural Sur 13,2 kV", current_A: 89, kv: 13.2 },
+      { name: "Distribuidor B°Industrial 13,2 kV", current_A: 65, kv: 13.2 }
+    ],
+    interconnects: ["ET Paso de los Libres Norte", "ET Parada Pucheta", "ET Monte Caseros"]
+  },
+  { name: "ET Paso de los Libres Norte", lat: -29.6911, lon: -57.1209, power_mw: 14.0, load_pct: 49.1, total_mva: 30, tension_kv: 132,
+    feeders: [
+      { name: "Alimentador Libres Sur 33 kV", current_A: 112, kv: 33 },
+      { name: "Distribuidor Ciudad Norte 13,2 kV", current_A: 155, kv: 13.2 },
+      { name: "Distribuidor B°Parque Industri 13,2 kV", current_A: 138, kv: 13.2 },
+      { name: "Distribuidor Puerto Libre 13,2 kV", current_A: 112, kv: 13.2 },
+      { name: "Distribuidor Rural Norte Libres 13,2 kV", current_A: 78, kv: 13.2 }
+    ],
+    interconnects: ["ET Paso de los Libres Sur"]
+  },
+  { name: "ET Parada Pucheta", lat: -29.9103, lon: -57.6097, power_mw: 2.4, load_pct: 33.1, total_mva: 7.5, tension_kv: 33,
+    feeders: [
+      { name: "Distribuidor Pucheta 1 13,2 kV", current_A: 52, kv: 13.2 },
+      { name: "Distribuidor Pucheta 2 13,2 kV", current_A: 37, kv: 13.2 }
+    ],
+    interconnects: ["ET Monte Caseros", "ET Paso de los Libres Sur"]
+  },
+  { name: "ET Mocoreta", lat: -30.5753, lon: -58.0038, power_mw: 8.3, load_pct: 29.1, total_mva: 30, tension_kv: 33,
+    feeders: [
+      { name: "Alimentador Mocoreta Norte 33 kV", current_A: 65, kv: 33 },
+      { name: "Distribuidor Pueblo 13,2 kV", current_A: 114, kv: 13.2 },
+      { name: "Distribuidor Rural N. 13,2 kV", current_A: 78, kv: 13.2 },
+      { name: "Distribuidor Rural S. 13,2 kV", current_A: 62, kv: 13.2 },
+      { name: "Distribuidor San Andres 13,2 kV", current_A: 45, kv: 13.2 }
+    ],
+    interconnects: ["ET Curuzu Cuatia", "ET Monte Caseros"]
+  },
+  { name: "ET Virasoro", lat: -28.0164, lon: -56.0191, power_mw: 23.5, load_pct: 82.5, total_mva: 30, tension_kv: 132,
+    feeders: [
+      { name: "Alimentador Virasoro Norte 33 kV", current_A: 185, kv: 33 },
+      { name: "Alimentador Las Acacias 33 kV", current_A: 42, kv: 33 },
+      { name: "Alimentador Acon Timber 33 kV", current_A: 15, kv: 33 },
+      { name: "Distribuidor Ciudad 1 13,2 kV", current_A: 162, kv: 13.2 },
+      { name: "Distribuidor Ciudad 2 13,2 kV", current_A: 145, kv: 13.2 },
+      { name: "Distribuidor B°San Cayetano 13,2 kV", current_A: 128, kv: 13.2 },
+      { name: "CD Virasoro - Alimentador 1 33 kV", current_A: 98, kv: 33 },
+      { name: "CD Virasoro - Alimentador 2 33 kV", current_A: 82, kv: 33 },
+      { name: "Distribuidor Rural Norte 13,2 kV", current_A: 65, kv: 13.2 },
+      { name: "Distribuidor Ruta 14 13,2 kV", current_A: 48, kv: 13.2 }
+    ],
+    interconnects: ["ET Virasoro Norte", "ET Las Acacias", "ET Acon Timber", "ET Santo Tome"]
+  },
+  { name: "CD Virasoro", lat: -28.025, lon: -56.022, power_mw: 5.5, load_pct: 57.9, total_mva: 10, tension_kv: 33,
+    feeders: [
+      { name: "Alimentador CD Virasoro 1 33 kV", current_A: 88, kv: 33 },
+      { name: "Distribuidor B°Industrial 13,2 kV", current_A: 135, kv: 13.2 }
+    ],
+    interconnects: ["ET Virasoro"]
+  },
+  { name: "ET Virasoro Norte", lat: -27.9479, lon: -56.002, power_mw: 16.9, load_pct: 59.3, total_mva: 30, tension_kv: 33,
+    feeders: [
+      { name: "Alimentador Virasoro Sur 33 kV", current_A: 135, kv: 33 },
+      { name: "Distribuidor Norte 13,2 kV", current_A: 118, kv: 13.2 }
+    ],
+    interconnects: ["ET Virasoro"]
+  },
+  { name: "ET Las Acacias", lat: -28.0356, lon: -56.0151, power_mw: 1.8, load_pct: 12.6, total_mva: 15, tension_kv: 33,
+    feeders: [
+      { name: "Distribuidor Las Acacias 1 13,2 kV", current_A: 58, kv: 13.2 },
+      { name: "Distribuidor Las Acacias 2 13,2 kV", current_A: 42, kv: 13.2 },
+      { name: "Distribuidor Rural Las Acacias 13,2 kV", current_A: 25, kv: 13.2 }
+    ],
+    interconnects: ["ET Virasoro"]
+  },
+  { name: "ET Acon Timber", lat: -27.9445, lon: -56.0222, power_mw: 0.8, load_pct: 8.4, total_mva: 10, tension_kv: 33,
+    feeders: [
+      { name: "Distribuidor Acon Timber 13,2 kV", current_A: 25, kv: 13.2 }
+    ],
+    interconnects: ["ET Virasoro Norte"]
+  },
+  { name: "ET La Cruz", lat: -29.1689, lon: -56.6611, power_mw: 10.7, load_pct: 74.8, total_mva: 15, tension_kv: 33,
+    feeders: [
+      { name: "Alimentador La Cruz N 33 kV", current_A: 85, kv: 33 },
+      { name: "Distribuidor Ciudad 1 13,2 kV", current_A: 155, kv: 13.2 },
+      { name: "Distribuidor Ciudad 2 13,2 kV", current_A: 138, kv: 13.2 },
+      { name: "Distribuidor Rural Norte 13,2 kV", current_A: 78, kv: 13.2 },
+      { name: "Distribuidor Rural Sur 13,2 kV", current_A: 62, kv: 13.2 },
+      { name: "Distribuidor Ruta 40 13,2 kV", current_A: 48, kv: 13.2 }
+    ],
+    interconnects: ["ET Yapeyu", "ET Alvear", "ET Paso de los Libres Norte"]
+  },
+  { name: "ET Yapeyu", lat: -29.4214, lon: -56.8393, power_mw: 2.2, load_pct: 30.4, total_mva: 7.5, tension_kv: 33,
+    feeders: [
+      { name: "Distribuidor Guaviravi 13,2 kV", current_A: 27, kv: 13.2 },
+      { name: "Distribuidor Yapeyu 13,2 kV", current_A: 59, kv: 13.2 }
+    ],
+    interconnects: ["ET La Cruz", "ET Alvear"]
+  },
+  { name: "ET Alvear", lat: -29.0852, lon: -56.5607, power_mw: 4.1, load_pct: 87.2, total_mva: 5, tension_kv: 33,
+    feeders: [
+      { name: "Distribuidor Alvear 1 13,2 kV", current_A: 75, kv: 13.2 },
+      { name: "Distribuidor Alvear 2 13,2 kV", current_A: 90, kv: 13.2 },
+      { name: "Distribuidor Torrent 13,2 kV", current_A: 26, kv: 13.2 }
+    ],
+    interconnects: ["ET La Cruz", "ET Yapeyu"]
+  },
+  { name: "ET Santo Tome", lat: -28.4329, lon: -56.4608, power_mw: 16.2, load_pct: 56.9, total_mva: 30, tension_kv: 132,
+    feeders: [
+      { name: "Alimentador 1 CD 33 kV", current_A: 154, kv: 33 },
+      { name: "Alimentador Linea vieja 33 kV", current_A: 6, kv: 33 },
+      { name: "Distribuidor 1 13,2 kV", current_A: 177, kv: 13.2 },
+      { name: "Distribuidor 2 13,2 kV", current_A: 206, kv: 13.2 },
+      { name: "Distribuidor 3 13,2 kV", current_A: 46, kv: 13.2 },
+      { name: "Distribuidor 4 13,2 kV", current_A: 36, kv: 13.2 },
+      { name: "Distribuidor 5 13,2 kV", current_A: 70, kv: 13.2 }
+    ],
+    interconnects: ["ET Virasoro", "ET San Carlos", "CD Santo Tome"]
+  },
+  { name: "CD Santo Tome", lat: -28.56, lon: -56.04, power_mw: 8.4, load_pct: 58.8, total_mva: 15, tension_kv: 33,
+    feeders: [
+      { name: "Alimentador CD Sto. Tome 33 kV", current_A: 134, kv: 33 },
+      { name: "Distribuidor B°Mihanovich 13,2 kV", current_A: 148, kv: 13.2 },
+      { name: "Distribuidor B°Industriales 13,2 kV", current_A: 115, kv: 13.2 }
+    ],
+    interconnects: ["ET Santo Tome"]
+  },
+  { name: "ET San Carlos", lat: -27.752, lon: -55.9038, power_mw: 2.4, load_pct: 51.1, total_mva: 5, tension_kv: 33,
+    feeders: [
+      { name: "Distribuidor 1 13,2 kV", current_A: 51, kv: 13.2 },
+      { name: "Distribuidor 2 13,2 kV", current_A: 3, kv: 13.2 },
+      { name: "Distribuidor 3 13,2 kV", current_A: 64, kv: 13.2 }
+    ],
+    interconnects: ["ET Santo Tome"]
+  },
+  { name: "ET Ituzaingo Norte", lat: -27.5079, lon: -56.6783, power_mw: 19.3, load_pct: 67.7, total_mva: 30, tension_kv: 132,
+    feeders: [
+      { name: "Alimentador 1 (CD2) 33 kV", current_A: 195, kv: 33 },
+      { name: "Alimentador 2 (CD1) 33 kV", current_A: 87, kv: 33 },
+      { name: "Alimentador 3 (Ruta 41) 33 kV", current_A: 4, kv: 33 },
+      { name: "Distribuidor 1 Ciudad 13,2 kV", current_A: 129, kv: 13.2 },
+      { name: "Distribuidor 2 Rural 13,2 kV", current_A: 50, kv: 13.2 },
+      { name: "Distribuidor 3 G3 13,2 kV", current_A: 30, kv: 13.2 }
+    ],
+    interconnects: ["ET Parque Industrial Ituzaingo", "CD N°2 (Ituzaingo)"]
+  },
+  { name: "ET Parque Industrial Ituzaingo", lat: -27.6308, lon: -56.9281, power_mw: 3.6, load_pct: 25.2, total_mva: 15, tension_kv: 33,
+    feeders: [
+      { name: "Alimentador 1 Biomasa termoelec. 33 kV", current_A: 4, kv: 33 },
+      { name: "Distribuidor 1 Villa Olivari 13,2 kV", current_A: 48, kv: 13.2 },
+      { name: "Distribuidor 2 Parque Indus. 13,2 kV", current_A: 101, kv: 13.2 },
+      { name: "Distribuidor 3 13,2 kV", current_A: 38, kv: 13.2 },
+      { name: "Distribuidor 4 13,2 kV", current_A: 29, kv: 13.2 }
+    ],
+    interconnects: ["ET Ituzaingo Norte"]
+  },
+  { name: "CD N°2 (Ituzaingo)", lat: -27.583, lon: -56.694, power_mw: 10.7, load_pct: 74.8, total_mva: 15, tension_kv: 33,
+    feeders: [
+      { name: "Alimentador CD2 Ituzaingo 33 kV", current_A: 171, kv: 33 },
+      { name: "Distribuidor Ciudad 1 Ituzaingo 13,2 kV", current_A: 152, kv: 13.2 },
+      { name: "Distribuidor B°1 de Mayo 13,2 kV", current_A: 135, kv: 13.2 },
+      { name: "Distribuidor B°Norte 13,2 kV", current_A: 118, kv: 13.2 }
+    ],
+    interconnects: ["ET Ituzaingo Norte"]
+  },
+  { name: "ET Ita Ibate", lat: -27.4465, lon: -57.337, power_mw: 24.0, load_pct: 84.2, total_mva: 30, tension_kv: 132,
+    feeders: [
+      { name: "Alimentador Caa Cati 33 kV", current_A: 113, kv: 33 },
+      { name: "Alimentador 2 33 kV", current_A: 184, kv: 33 },
+      { name: "Distribuidor Ita Ibate 13,2 kV", current_A: 155, kv: 13.2 },
+      { name: "Distribuidor Beron de Astrada 13,2 kV", current_A: 85, kv: 13.2 },
+      { name: "Distribuidor 1111 13,2 kV", current_A: 41, kv: 13.2 }
+    ],
+    interconnects: ["ET Pirayu", "ET San Luis del Palmar"]
+  },
+  { name: "ET Paso Tala", lat: -29.2449, lon: -58.7327, power_mw: 4.6, load_pct: 48.4, total_mva: 10, tension_kv: 33,
+    feeders: [],
+    interconnects: ["ET Curuzu Cuatia", "ET Mercedes"]
+  },
+  { name: "ET Brugne", lat: -28.1051, lon: -58.7744, power_mw: 24.4, load_pct: 85.6, total_mva: 30, tension_kv: 33,
+    feeders: [],
+    interconnects: ["ET Bella Vista", "ET San Roque", "ET Saladas"]
+  },
+  { name: "ET Santa Rosa", lat: -28.2323, lon: -58.0694, power_mw: 6.6, load_pct: 69.5, total_mva: 10, tension_kv: 33,
+    feeders: [
+      { name: "Distribuidor Santa Rosa 1 13,2 kV", current_A: 105, kv: 13.2 },
+      { name: "Distribuidor Santa Rosa 2 13,2 kV", current_A: 88, kv: 13.2 },
+      { name: "Distribuidor Santa Rosa 3 13,2 kV", current_A: 120, kv: 13.2 }
+    ],
+    interconnects: ["ET Mercedes", "ET Parque Industrial Santa Rosa", "ET Concepcion"]
+  },
+  { name: "ET Parque Industrial Santa Rosa", lat: -28.2386, lon: -58.0643, power_mw: 1.8, load_pct: 12.6, total_mva: 15, tension_kv: 33,
+    feeders: [
+      { name: "Alimentador Concepcion 33 kV", current_A: 48, kv: 33 }
+    ],
+    interconnects: ["ET Santa Rosa"]
+  },
+  { name: "ET Concepcion", lat: -28.3823, lon: -57.91, power_mw: 2.5, load_pct: 53.2, total_mva: 5, tension_kv: 33,
+    feeders: [
+      { name: "Distribuidor 1 13,2 kV", current_A: 68, kv: 13.2 },
+      { name: "Distribuidor 2 13,2 kV", current_A: 53, kv: 13.2 }
+    ],
+    interconnects: ["ET Santa Rosa", "ET Mburucuya"]
+  },
+  { name: "ET Mburucuya", lat: -28.0285, lon: -58.2270, power_mw: 5.8, load_pct: 61.1, total_mva: 10, tension_kv: 33,
+    feeders: [
+      { name: "Distribuidor Urbana 1 13,2 kV", current_A: 93, kv: 13.2 },
+      { name: "Distribuidor Urbana 2 13,2 kV", current_A: 115, kv: 13.2 },
+      { name: "Distribuidor Rural 1 13,2 kV", current_A: 32, kv: 13.2 },
+      { name: "Distribuidor Rural 2 13,2 kV", current_A: 15, kv: 13.2 }
+    ],
+    interconnects: ["ET Mercedes", "ET Concepcion"]
+  },
+  { name: "ET San Roque", lat: -28.5847, lon: -58.7069, power_mw: 4.1, load_pct: 87.2, total_mva: 5, tension_kv: 33,
+    feeders: [
+      { name: "Alimentador Mantilla 33 kV", current_A: 29, kv: 33 },
+      { name: "Distribuidor Rural 13,2 kV", current_A: 39, kv: 13.2 },
+      { name: "Distribuidor Ciudad 13,2 kV", current_A: 157, kv: 13.2 }
+    ],
+    interconnects: ["ET Bella Vista", "ET Brugne"]
+  },
+];
+
+// ═══════════════════════════════════════════════
+//  HELPER FUNCTIONS
+// ═══════════════════════════════════════════════
+function getLoadColor(pct) {
+  if (pct === null || pct === undefined) return '#8b949e';
+  if (pct < 70)  return '#3fb950';
+  if (pct < 85)  return '#d29922';
+  if (pct < 95)  return '#f0883e';
+  return '#f85149';
+}
+
+function getLoadClass(pct) {
+  if (pct === null) return 'gray';
+  if (pct < 70)  return 'green';
+  if (pct < 85)  return 'yellow';
+  if (pct < 95)  return 'orange';
+  return 'red';
+}
+
+function getFeederColor(kv) {
+  if (kv >= 132) return '#bc8cff';
+  if (kv >= 33)  return '#58a6ff';
+  return '#3fb950';
+}
+
+function getTensionLabel(kv) {
+  if (kv >= 132) return '132 kV';
+  if (kv >= 33)  return '33 kV';
+  return '13.2 kV';
+}
+
+function getTensionClass(kv) {
+  if (kv >= 132) return 'kv132';
+  if (kv >= 33)  return 'kv33';
+  return 'kv13';
+}
+
+function markerSize(et) {
+  if (!et.total_mva) return 16;
+  if (et.total_mva >= 100) return 28;
+  if (et.total_mva >= 50)  return 24;
+  if (et.total_mva >= 30)  return 20;
+  if (et.total_mva >= 15)  return 18;
+  return 14;
+}
+
+// ═══════════════════════════════════════════════
+//  MAP INIT
+// ═══════════════════════════════════════════════
+const map = L.map('map', {
+  center: [-28.5, -58.0],
+  zoom: 7,
+  zoomControl: false,
+  attributionControl: true
+});
+
+// Dark map tiles
+L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png', {
+  attribution: '© OpenStreetMap contributors © CARTO',
+  subdomains: 'abcd',
+  maxZoom: 18
+}).addTo(map);
+
+// Zoom control bottom right
+L.control.zoom({ position: 'bottomright' }).addTo(map);
+
+// ═══════════════════════════════════════════════
+//  BUILD MARKERS & LINES
+// ═══════════════════════════════════════════════
+const markers    = {};
+const etIndex    = {};
+let   feederLines = [];
+let   showFeeders = true;
+let   showHeatmap = false;
+let   heatLayer   = null;
+let   activeFilter = 'all';
+
+// Build ET index
+ET_DATA.forEach((et, i) => { etIndex[et.name] = et; });
+
+// Create feeder lines layer group
+const feederGroup = L.layerGroup().addTo(map);
+
+function drawFeederLines() {
+  feederGroup.clearLayers();
+  if (!showFeeders) return;
+
+  const drawn = new Set();
+  ET_DATA.forEach(et => {
+    if (!et.interconnects) return;
+    et.interconnects.forEach(targetName => {
+      const target = etIndex[targetName];
+      if (!target) return;
+      const key = [et.name, targetName].sort().join('||');
+      if (drawn.has(key)) return;
+      drawn.add(key);
+
+      // Determine line tension
+      const feeder = et.feeders.find(f => f.kv >= 33);
+      const lineTension = feeder ? feeder.kv : 33;
+      const lineColor = getFeederColor(lineTension);
+      const lineWeight = lineTension >= 132 ? 3 : lineTension >= 33 ? 2 : 1.5;
+
+      const line = L.polyline(
+        [[et.lat, et.lon], [target.lat, target.lon]],
+        {
+          color: lineColor,
+          weight: lineWeight,
+          opacity: 0.65,
+          dashArray: lineTension >= 132 ? null : '6 4'
+        }
+      );
+      feederGroup.addLayer(line);
+    });
+  });
+}
+
+function createETMarker(et) {
+  const color = getLoadColor(et.load_pct);
+  const size  = markerSize(et);
+  const isCritical = et.load_pct !== null && et.load_pct >= 95;
+
+  const icon = L.divIcon({
+    className: '',
+    html: `<div class="et-marker ${isCritical ? 'et-marker-critical' : ''}" 
+              style="width:${size}px;height:${size}px;background:${color};border-color:rgba(255,255,255,0.25);position:relative;"
+              title="${et.name}">
+            ${size >= 18 ? '' : ''}
+           </div>`,
+    iconSize: [size, size],
+    iconAnchor: [size/2, size/2],
+    popupAnchor: [0, -size/2]
+  });
+
+  const marker = L.marker([et.lat, et.lon], { icon, zIndexOffset: et.load_pct ? Math.round(et.load_pct) : 0 });
+
+  // MODIFICADO: Tooltip ahora incluye coordenadas
+  marker.bindTooltip(
+    `<strong>${et.name}</strong><br>` +
+    `${et.load_pct !== null ? et.load_pct.toFixed(1)+'% de carga' : 'Sin datos'} · ${et.power_mw !== null ? et.power_mw+' MW' : '–'}<br>` +
+    `<div class="tooltip-coords">📍 ${et.lat.toFixed(4)}, ${et.lon.toFixed(4)}</div>`,
+    { className: 'et-tooltip', direction: 'top', offset: [0, -size/2] }
+  );
+
+  marker.on('click', () => showInfoPanel(et));
+  return marker;
+}
+
+function buildMarkers() {
+  ET_DATA.forEach(et => {
+    const marker = createETMarker(et);
+    marker.addTo(map);
+    markers[et.name] = marker;
+  });
+}
+
+// ═══════════════════════════════════════════════
+//  SIDEBAR LIST
+// ═══════════════════════════════════════════════
+function buildSidebar() {
+  const list = document.getElementById('etList');
+  list.innerHTML = '';
+
+  const sorted = [...ET_DATA].sort((a, b) => {
+    if (b.load_pct === null && a.load_pct === null) return 0;
+    if (b.load_pct === null) return -1;
+    if (a.load_pct === null) return 1;
+    return b.load_pct - a.load_pct;
+  });
+
+  sorted.forEach(et => {
+    const color = getLoadColor(et.load_pct);
+    const cls   = getLoadClass(et.load_pct);
+    const div = document.createElement('div');
+    div.className = 'et-item';
+    div.dataset.name = et.name;
+    div.dataset.class = cls;
+    div.innerHTML = `
+      <div class="et-item-header">
+        <div class="et-dot" style="background:${color}"></div>
+        <span class="et-name">${et.name}</span>
+        <span class="et-load-badge" style="background:${color}22;color:${color};border:1px solid ${color}44">
+          ${et.load_pct !== null ? et.load_pct.toFixed(1)+'%' : '—'}
+        </span>
+      </div>
+      <div class="et-meta">
+        <span>⚡ ${et.power_mw !== null ? et.power_mw+' MW' : '–'}</span>
+        ${et.total_mva ? `<span>🔧 ${et.total_mva} MVA</span>` : ''}
+        <span>📡 ${et.feeders.length} alim.</span>
+      </div>
+      <div class="et-coords">📍 ${et.lat.toFixed(4)}, ${et.lon.toFixed(4)}</div>
+    `;
+    div.addEventListener('click', () => {
+      document.querySelectorAll('.et-item').forEach(i => i.classList.remove('active'));
+      div.classList.add('active');
+      map.setView([et.lat, et.lon], 12, { animate: true });
+      showInfoPanel(et);
+    });
+    list.appendChild(div);
+  });
+}
+
+// ═══════════════════════════════════════════════
+//  INFO PANEL
+// ═══════════════════════════════════════════════
+function showInfoPanel(et) {
+  const panel = document.getElementById('infoPanel');
+  panel.classList.add('visible');
+
+  // Header
+  const color = getLoadColor(et.load_pct);
+  document.getElementById('infoPanelIcon').style.background = color + '33';
+  document.getElementById('infoPanelIcon').textContent = et.tension_kv >= 132 ? '🔴' : '⚡';
+  document.getElementById('infoPanelName').textContent = et.name;
+  document.getElementById('infoPanelSub').textContent =
+    `Tensión: ${et.tension_kv} kV · ${et.interconnects ? et.interconnects.length : 0} interconexiones`;
+
+  // MODIFICADO: Coordenadas en el panel de información
+  document.getElementById('infoPanelCoords').textContent = 
+    `Lat: ${et.lat.toFixed(5)}  |  Lon: ${et.lon.toFixed(5)}`;
+
+  // Load gauge
+  const pct = et.load_pct;
+  document.getElementById('infoPanelLoad').textContent = pct !== null ? pct.toFixed(1) + '%' : 'Sin datos';
+  document.getElementById('infoPanelLoad').style.color = color;
+  const bar = document.getElementById('infoPanelLoadBar');
+  bar.style.width = (pct !== null ? Math.min(pct, 100) : 0) + '%';
+  bar.style.background = color;
+
+  // Stats
+  document.getElementById('infoMW').textContent  = et.power_mw !== null ? et.power_mw + ' MW' : '–';
+  document.getElementById('infoMVA').textContent = et.total_mva !== null ? et.total_mva + ' MVA' : '–';
+  document.getElementById('infoFeeders').textContent = et.feeders.length;
+  const maxI = et.feeders.length > 0 ? Math.max(...et.feeders.map(f => f.current_A)) : null;
+  document.getElementById('infoMaxI').textContent = maxI !== null ? maxI + ' A' : '–';
+
+  // Feeder list
+  const fl = document.getElementById('infoFeederList');
+  fl.innerHTML = '';
+  const maxCurrent = maxI || 1;
+
+  if (et.feeders.length === 0) {
+    fl.innerHTML = '<div style="color:var(--text-muted);font-size:12px;padding:4px 0">Sin datos de alimentadores</div>';
+  } else {
+    const sorted = [...et.feeders].sort((a, b) => b.current_A - a.current_A);
+    sorted.forEach(f => {
+      const fc = getFeederColor(f.kv);
+      const fillPct = Math.min((f.current_A / maxCurrent) * 100, 100);
+      const div = document.createElement('div');
+      div.className = 'feeder-item';
+      div.innerHTML = `
+        <span class="feeder-tension ${getTensionClass(f.kv)}">${getTensionLabel(f.kv)}</span>
+        <span class="feeder-name">${f.name}</span>
+        <span class="feeder-current">${f.current_A} A</span>
+        <div class="feeder-bar"><div class="feeder-bar-fill" style="width:${fillPct}%;background:${fc}"></div></div>
+      `;
+      fl.appendChild(div);
+    });
+  }
+
+  // Highlight on sidebar
+  document.querySelectorAll('.et-item').forEach(i => {
+    i.classList.toggle('active', i.dataset.name === et.name);
+  });
+}
+
+function closeInfoPanel() {
+  document.getElementById('infoPanel').classList.remove('visible');
+  document.querySelectorAll('.et-item').forEach(i => i.classList.remove('active'));
+}
+
+// ═══════════════════════════════════════════════
+//  SEARCH & FILTER
+// ═══════════════════════════════════════════════
+document.getElementById('searchInput').addEventListener('input', function() {
+  const q = this.value.toLowerCase();
+  document.querySelectorAll('.et-item').forEach(item => {
+    const name = item.dataset.name.toLowerCase();
+    item.classList.toggle('hidden', !name.includes(q));
+  });
+});
+
+function setFilter(cls, el) {
+  activeFilter = cls;
+  document.querySelectorAll('.chip').forEach(c => c.classList.remove('active'));
+  el.classList.add('active');
+
+  document.querySelectorAll('.et-item').forEach(item => {
+    if (cls === 'all') {
+      item.classList.remove('hidden');
+    } else {
+      item.classList.toggle('hidden', item.dataset.class !== cls);
+    }
+  });
+}
+
+// ═══════════════════════════════════════════════
+//  CONTROLS
+// ═══════════════════════════════════════════════
+function toggleFeeders() {
+  showFeeders = !showFeeders;
+  const btn = document.getElementById('btnFeeders');
+  btn.classList.toggle('active', showFeeders);
+  drawFeederLines();
+}
+
+function toggleHeatmap() {
+  showHeatmap = !showHeatmap;
+  const btn = document.getElementById('btnHeatmap');
+  btn.classList.toggle('active', showHeatmap);
+
+  if (heatLayer) { map.removeLayer(heatLayer); heatLayer = null; }
+  if (!showHeatmap) return;
+
+  // Simple heatmap using circle overlays
+  const heatGroup = L.layerGroup();
+  ET_DATA.forEach(et => {
+    if (et.load_pct === null) return;
+    const color = getLoadColor(et.load_pct);
+    const radius = 8000 + (et.power_mw || 5) * 800;
+    L.circle([et.lat, et.lon], {
+      radius,
+      color: 'transparent',
+      fillColor: color,
+      fillOpacity: 0.15
+    }).addTo(heatGroup);
+  });
+  heatLayer = heatGroup;
+  heatGroup.addTo(map);
+}
+
+function resetView() {
+  map.setView([-28.5, -58.0], 7, { animate: true });
+  closeInfoPanel();
+}
+
+// ═══════════════════════════════════════════════
+//  HEADER STATS
+// ═══════════════════════════════════════════════
+function updateHeaderStats() {
+  const total = ET_DATA.length;
+  const totalMW = ET_DATA.reduce((s, et) => s + (et.power_mw || 0), 0);
+  const critical = ET_DATA.filter(et => et.load_pct !== null && et.load_pct >= 95).length;
+  const totalFeeders = ET_DATA.reduce((s, et) => s + et.feeders.length, 0);
+
+  document.getElementById('totalETs').textContent = total;
+  document.getElementById('totalMW').textContent = totalMW.toFixed(0);
+  document.getElementById('criticalCount').textContent = critical;
+  document.getElementById('totalFeeders').textContent = totalFeeders;
+}
+
+// ═══════════════════════════════════════════════
+//  INIT
+// ═══════════════════════════════════════════════
+window.addEventListener('load', () => {
+  buildMarkers();
+  drawFeederLines();
+  buildSidebar();
+  updateHeaderStats();
+
+  setTimeout(() => {
+    document.getElementById('loading').style.opacity = '0';
+    document.getElementById('loading').style.transition = 'opacity 0.4s';
+    setTimeout(() => document.getElementById('loading').remove(), 400);
+  }, 800);
+});
+</script>
+</body>
+</html>
