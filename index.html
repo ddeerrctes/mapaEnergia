@@ -647,7 +647,7 @@
 // ═══════════════════════════════════════════════
 const ET_DATA = [
   // ── Capital (Corrientes ciudad) ───────────────
-  { name: "ET Corrientes Centro", lat: -27.4681, lon: -58.8322, power_mw: 71.4, load_pct: 75.2, total_mva: 100, tension_kv: 132,
+  { name: "ET Corrientes Centro", lat: -27.46986363, lon: -58.85325705, power_mw: 71.4, load_pct: 75.2, total_mva: 100, tension_kv: 132,
     feeders: [
       { name: "Alimentador TIA 33 kV", current_A: 329, kv: 33 },
       { name: "Alimentador 1 13,2 kV", current_A: 234, kv: 13.2 },
@@ -671,7 +671,7 @@ const ET_DATA = [
     ],
     interconnects: ["ET Santa Catalina", "ET Sarmiento", "ET Corrientes Este"]
   },
-  { name: "ET Santa Catalina", lat: -27.521, lon: -58.8112, power_mw: 125.5, load_pct: 88.0, total_mva: 150, tension_kv: 132,
+  { name: "ET Santa Catalina", lat: -27.513655, lon: -58.79783124, power_mw: 125.5, load_pct: 88.0, total_mva: 150, tension_kv: 132,
     feeders: [
       { name: "Alimentador Ongay 33 kV", current_A: 214, kv: 33 },
       { name: "Alimentador Quilmes 33 kV", current_A: 243, kv: 33 },
@@ -694,7 +694,7 @@ const ET_DATA = [
     ],
     interconnects: ["ET Corrientes Centro", "ET Sarmiento", "ET Empedrado"]
   },
-  { name: "ET Sarmiento", lat: -27.4863, lon: -58.831, power_mw: 37.3, load_pct: 78.5, total_mva: 50, tension_kv: 132,
+  { name: "ET Sarmiento", lat: -27.48490366, lon: -58.83095069, power_mw: 37.3, load_pct: 78.5, total_mva: 50, tension_kv: 132,
     feeders: [
       { name: "Alimentador Sargento Cabral 33 kV", current_A: 168, kv: 33 },
       { name: "Distribuidor Av. Costanera Norte 13,2 kV", current_A: 210, kv: 13.2 },
@@ -703,7 +703,7 @@ const ET_DATA = [
     ],
     interconnects: ["ET Corrientes Centro", "ET Santa Catalina"]
   },
-  { name: "ET Corrientes Este", lat: -27.4696, lon: -58.7775, power_mw: 104.0, load_pct: 84.2, total_mva: 130, tension_kv: 132,
+  { name: "ET Corrientes Este", lat: -27.46963888, lon: -58.77747021, power_mw: 104.0, load_pct: 84.2, total_mva: 130, tension_kv: 132,
     feeders: [
       { name: "Alimentador San Luis 33 kV", current_A: 180, kv: 33 },
       { name: "Alimentador Wallmart 33 kV", current_A: 387, kv: 33 },
@@ -720,7 +720,7 @@ const ET_DATA = [
     ],
     interconnects: ["ET Corrientes Centro", "ET Pirayu", "ET Golf Club", "ET Laguna Brava"]
   },
-  { name: "ET Pirayu", lat: -27.3225, lon: -58.5668, power_mw: 27.0, load_pct: 94.7, total_mva: 30, tension_kv: 132,
+  { name: "ET Pirayu", lat: -27.32250572, lon: -58.56681486, power_mw: 27.0, load_pct: 94.7, total_mva: 30, tension_kv: 132,
     feeders: [
       { name: "Alimentador Linea Aerea 33 kV", current_A: 97, kv: 33 },
       { name: "Alimentador 2 San Luis 33 kV", current_A: 147, kv: 33 },
@@ -732,7 +732,8 @@ const ET_DATA = [
     ],
     interconnects: ["ET Corrientes Este", "ET Itati", "ET San Luis del Palmar"]
   },
-  { name: "ET Golf Club", lat: -27.4542, lon: -58.7221, power_mw: 3.8, load_pct: 40.0, total_mva: 10, tension_kv: 33,
+  // En los gpkg figura como nset "CD 19 - Golf Club" (trafo_33kV.gpkg fid=5, tipo CD, ub "Er: Golf Club - Ruta Provincial 99"); posicion exacta igual a la actual.
+  { name: "ET Golf Club", lat: -27.454184, lon: -58.722059, power_mw: 3.8, load_pct: 40.0, total_mva: 10, tension_kv: 33,
     feeders: [
       { name: "Distribuidor Ciudad 13,2 kV", current_A: 75, kv: 13.2 },
       { name: "Distribuidor Ruta y Perichon 13,2 kV", current_A: 72, kv: 13.2 },
@@ -740,7 +741,7 @@ const ET_DATA = [
     ],
     interconnects: ["ET Corrientes Este", "ET Laguna Brava"]
   },
-  { name: "ET Laguna Brava", lat: -27.4883, lon: -58.7528, power_mw: 3.9, load_pct: 83.0, total_mva: 5, tension_kv: 33,
+  { name: "ET Laguna Brava", lat: -27.48995235, lon: -58.72209502, power_mw: 3.9, load_pct: 83.0, total_mva: 5, tension_kv: 33,
     feeders: [
       { name: "Alimentador Carpincho 33 kV", current_A: 45, kv: 33 },
       { name: "Alimentador Carcel 33 kV", current_A: 27, kv: 33 },
@@ -749,26 +750,28 @@ const ET_DATA = [
     ],
     interconnects: ["ET Corrientes Este", "ET Golf Club"]
   },
-  { name: "ET San Luisito", lat: -27.5059, lon: -58.5742, power_mw: 1.6, load_pct: 69.6, total_mva: 2.5, tension_kv: 33,
+  // Unica fila con ese nombre: trafo_33kV.gpkg fid=20 (tipo ER, ub "Et Rebaje N 1 ... Rotonda San Luisito"); posicion practicamente igual. Revisar.
+  { name: "ET San Luisito", lat: -27.50592986, lon: -58.5743924, power_mw: 1.6, load_pct: 69.6, total_mva: 2.5, tension_kv: 33,
     feeders: [
       { name: "Distribuidor San Luisito 13,2 kV", current_A: 72, kv: 13.2 }
     ],
     interconnects: ["ET Pirayu", "ET San Luis del Palmar"]
   },
-  { name: "ET San Luis del Palmar", lat: -27.505, lon: -58.5543, power_mw: 3.7, load_pct: 78.7, total_mva: 5, tension_kv: 33,
+  { name: "ET San Luis del Palmar", lat: -27.50500886, lon: -58.5543669, power_mw: 3.7, load_pct: 78.7, total_mva: 5, tension_kv: 33,
     feeders: [
       { name: "Distribuidor Ex desmotadora 13,2 kV", current_A: 168, kv: 13.2 }
     ],
     interconnects: ["ET Pirayu", "ET San Luisito"]
   },
-  { name: "ET Itati", lat: -27.2829, lon: -58.2416, power_mw: 4.0, load_pct: 85.1, total_mva: 5, tension_kv: 33,
+  { name: "ET Itati", lat: -27.2829408, lon: -58.2416476, power_mw: 4.0, load_pct: 85.1, total_mva: 5, tension_kv: 33,
     feeders: [
       { name: "Distribuidor 1 Pueblo 13,2 kV", current_A: 181, kv: 13.2 },
       { name: "Distribuidor 2 13,2 kV", current_A: 46, kv: 13.2 }
     ],
     interconnects: ["ET Pirayu"]
   },
-  { name: "ET Empedrado", lat: -27.9372, lon: -58.8079, power_mw: 8.6, load_pct: 60.1, total_mva: 15, tension_kv: 33,
+  // gpkg trafo_33kV.gpkg fid=47 (unica fila tipo ET con loc=EMPEDRADO, ub "PLANTA DPEC E.T.RUTA 12"): corrige la longitud ~1,9 km (la latitud ya coincidia). Revisar.
+  { name: "ET Empedrado", lat: -27.93721956, lon: -58.78844679, power_mw: 8.6, load_pct: 60.1, total_mva: 15, tension_kv: 33,
     feeders: [
       { name: "Distribuidor Empedrado 1 13,2 kV", current_A: 138, kv: 13.2 },
       { name: "Distribuidor Empedrado 2 13,2 kV", current_A: 180, kv: 13.2 },
@@ -778,7 +781,7 @@ const ET_DATA = [
   },
 
   // ── Centros de Distribución Capital ──────────
-  { name: "CD N°3", lat: -27.4796, lon: -58.8329, power_mw: 13.4, load_pct: 93.7, total_mva: 15, tension_kv: 33,
+  { name: "CD N°3", lat: -27.482641, lon: -58.826443, power_mw: 13.4, load_pct: 93.7, total_mva: 15, tension_kv: 33,
     feeders: [
       { name: "Alimentador Sargento Cabral 33 kV", current_A: 213, kv: 33 },
       { name: "Distribuidor Av. 3 de Abril 13,2 kV", current_A: 178, kv: 13.2 },
@@ -793,7 +796,7 @@ const ET_DATA = [
     ],
     interconnects: ["ET Corrientes Centro", "ET Sarmiento"]
   },
-  { name: "CD N°5", lat: -27.4908, lon: -58.8082, power_mw: 12.4, load_pct: 62.0, total_mva: 20, tension_kv: 33,
+  { name: "CD N°5", lat: -27.491559, lon: -58.803776, power_mw: 12.4, load_pct: 62.0, total_mva: 20, tension_kv: 33,
     feeders: [
       { name: "Alimentador Libertad 33 kV", current_A: 185, kv: 33 },
       { name: "Distribuidor España 13,2 kV", current_A: 155, kv: 13.2 },
@@ -804,7 +807,7 @@ const ET_DATA = [
     ],
     interconnects: ["ET Corrientes Centro"]
   },
-  { name: "CD N°6", lat: -27.5079, lon: -58.7888, power_mw: 10.1, load_pct: 76.0, total_mva: 14, tension_kv: 33,
+  { name: "CD N°6", lat: -27.505799, lon: -58.79409, power_mw: 10.1, load_pct: 76.0, total_mva: 14, tension_kv: 33,
     feeders: [
       { name: "Alimentador Ruiz 33 kV", current_A: 162, kv: 33 },
       { name: "Distribuidor Av. Poncho Verde 13,2 kV", current_A: 148, kv: 13.2 },
@@ -817,7 +820,7 @@ const ET_DATA = [
     ],
     interconnects: ["ET Corrientes Este", "ET Corrientes Centro"]
   },
-  { name: "CD N°7", lat: -27.469, lon: -58.8004, power_mw: 8.7, load_pct: 60.9, total_mva: 15, tension_kv: 33,
+  { name: "CD N°7", lat: -27.466838, lon: -58.791641, power_mw: 8.7, load_pct: 60.9, total_mva: 15, tension_kv: 33,
     feeders: [
       { name: "Alimentador Av. 25 de Mayo 33 kV", current_A: 132, kv: 33 },
       { name: "Distribuidor Av. Libertad 13,2 kV", current_A: 115, kv: 13.2 },
@@ -835,7 +838,7 @@ const ET_DATA = [
     ],
     interconnects: ["ET Corrientes Centro"]
   },
-  { name: "CD N°8", lat: -27.4651, lon: -58.8387, power_mw: 11.0, load_pct: 45.8, total_mva: 25, tension_kv: 33,
+  { name: "CD N°8", lat: -27.465326, lon: -58.835556, power_mw: 11.0, load_pct: 45.8, total_mva: 25, tension_kv: 33,
     feeders: [
       { name: "Alimentador B°Ambigu 33 kV", current_A: 175, kv: 33 },
       { name: "Distribuidor Av. Centenario 13,2 kV", current_A: 152, kv: 13.2 },
@@ -849,7 +852,7 @@ const ET_DATA = [
     ],
     interconnects: ["ET Corrientes Centro", "ET Santa Catalina"]
   },
-  { name: "CD N°9", lat: -27.4844, lon: -58.7897, power_mw: 14.3, load_pct: 100.0, total_mva: 15, tension_kv: 33,
+  { name: "CD N°9", lat: -27.487734, lon: -58.781534, power_mw: 14.3, load_pct: 100.0, total_mva: 15, tension_kv: 33,
     feeders: [
       { name: "Alimentador Tipoiti 2 - CD9 33 kV", current_A: 228, kv: 33 },
       { name: "Distribuidor Av. Clark 13,2 kV", current_A: 210, kv: 13.2 },
@@ -859,7 +862,7 @@ const ET_DATA = [
     ],
     interconnects: ["ET Corrientes Este"]
   },
-  { name: "CD N°10", lat: -27.4762, lon: -58.8145, power_mw: 9.3, load_pct: 65.0, total_mva: 15, tension_kv: 33,
+  { name: "CD N°10", lat: -27.476509, lon: -58.814471, power_mw: 9.3, load_pct: 65.0, total_mva: 15, tension_kv: 33,
     feeders: [
       { name: "Alimentador Ongay Sur 33 kV", current_A: 148, kv: 33 },
       { name: "Distribuidor Av. Ferré Centro 13,2 kV", current_A: 130, kv: 13.2 },
@@ -869,7 +872,7 @@ const ET_DATA = [
     ],
     interconnects: ["ET Corrientes Centro"]
   },
-  { name: "CD N°11", lat: -27.4949, lon: -58.8323, power_mw: 13.4, load_pct: 93.7, total_mva: 15, tension_kv: 33,
+  { name: "CD N°11", lat: -27.505928, lon: -58.828035, power_mw: 13.4, load_pct: 93.7, total_mva: 15, tension_kv: 33,
     feeders: [
       { name: "Alimentador Independencia 1 - CD11 33 kV", current_A: 214, kv: 33 },
       { name: "Distribuidor Sargento Cabral Sur 13,2 kV", current_A: 195, kv: 13.2 },
@@ -879,7 +882,7 @@ const ET_DATA = [
     ],
     interconnects: ["ET Corrientes Centro", "ET Santa Catalina"]
   },
-  { name: "CD N°12", lat: -27.4728, lon: -58.8408, power_mw: 12.3, load_pct: 86.0, total_mva: 15, tension_kv: 33,
+  { name: "CD N°12", lat: -27.477031, lon: -58.836495, power_mw: 12.3, load_pct: 86.0, total_mva: 15, tension_kv: 33,
     feeders: [
       { name: "Alimentador Av. Costanera N. - CD12 33 kV", current_A: 196, kv: 33 },
       { name: "Distribuidor Av. Centenario N. 13,2 kV", current_A: 178, kv: 13.2 },
@@ -889,7 +892,7 @@ const ET_DATA = [
     ],
     interconnects: ["ET Sarmiento", "ET Corrientes Centro"]
   },
-  { name: "CD N°13", lat: -27.4658, lon: -58.8296, power_mw: 10.6, load_pct: 74.1, total_mva: 15, tension_kv: 33,
+  { name: "CD N°13", lat: -27.463217, lon: -58.824965, power_mw: 10.6, load_pct: 74.1, total_mva: 15, tension_kv: 33,
     feeders: [
       { name: "Alimentador Quilmes - CD13 33 kV", current_A: 169, kv: 33 },
       { name: "Distribuidor B°Berón de Astrada 13,2 kV", current_A: 152, kv: 13.2 },
@@ -899,7 +902,7 @@ const ET_DATA = [
     ],
     interconnects: ["ET Corrientes Centro"]
   },
-  { name: "CD N°14", lat: -27.4722, lon: -58.8339, power_mw: 17.5, load_pct: 61.4, total_mva: 30, tension_kv: 33,
+  { name: "CD N°14", lat: -27.472236, lon: -58.833872, power_mw: 17.5, load_pct: 61.4, total_mva: 30, tension_kv: 33,
     feeders: [
       { name: "Alimentador 17 de Agosto - CD14 33 kV", current_A: 280, kv: 33 },
       { name: "Distribuidor Rivadavia Norte 13,2 kV", current_A: 245, kv: 13.2 },
@@ -912,7 +915,7 @@ const ET_DATA = [
     ],
     interconnects: ["ET Santa Catalina", "ET Corrientes Centro"]
   },
-  { name: "CD N°15", lat: -27.5009, lon: -58.8438, power_mw: 13.3, load_pct: 93.0, total_mva: 15, tension_kv: 33,
+  { name: "CD N°15", lat: -27.492402, lon: -58.847938, power_mw: 13.3, load_pct: 93.0, total_mva: 15, tension_kv: 33,
     feeders: [
       { name: "Alimentador Av. Quintana S. 33 kV", current_A: 212, kv: 33 },
       { name: "Distribuidor B°San Gerónimo Sur 13,2 kV", current_A: 194, kv: 13.2 },
@@ -922,7 +925,7 @@ const ET_DATA = [
     ],
     interconnects: ["ET Santa Catalina", "ET Corrientes Centro"]
   },
-  { name: "CD N°16", lat: -27.4721, lon: -58.8059, power_mw: 12.4, load_pct: 86.7, total_mva: 15, tension_kv: 33,
+  { name: "CD N°16", lat: -27.46949947, lon: -58.80800678, power_mw: 12.4, load_pct: 86.7, total_mva: 15, tension_kv: 33,
     feeders: [
       { name: "Alimentador Tipoiti 1 - CD16 33 kV", current_A: 198, kv: 33 },
       { name: "Distribuidor B°Santa Teresita 13,2 kV", current_A: 180, kv: 13.2 },
@@ -933,7 +936,8 @@ const ET_DATA = [
     ],
     interconnects: ["ET Corrientes Este"]
   },
-  { name: "CD N°21", lat: -27.47, lon: -58.8242, power_mw: 9.4, load_pct: 49.5, total_mva: 20, tension_kv: 33,
+  // gpkg ADefinir.gpkg fid=29 (nset "CD 21 - Molina Punta"): corrige ~4,5 km respecto de la posicion anterior. Revisar.
+  { name: "CD N°21", lat: -27.450971, lon: -58.78335, power_mw: 9.4, load_pct: 49.5, total_mva: 20, tension_kv: 33,
     feeders: [
       { name: "Alimentador Santa Catalina 2 33 kV", current_A: 150, kv: 33 },
       { name: "Distribuidor Av. Sarmiento 13,2 kV", current_A: 132, kv: 13.2 },
@@ -942,7 +946,7 @@ const ET_DATA = [
     ],
     interconnects: ["ET Corrientes Centro", "ET Santa Catalina"]
   },
-  { name: "CD N°22", lat: -27.4724, lon: -58.8453, power_mw: 6.9, load_pct: 69.0, total_mva: 10, tension_kv: 33,
+  { name: "CD N°22", lat: -27.464201, lon: -58.842959, power_mw: 6.9, load_pct: 69.0, total_mva: 10, tension_kv: 33,
     feeders: [
       { name: "Alimentador Av. Centenario N.O. 33 kV", current_A: 110, kv: 33 },
       { name: "Distribuidor Ruta 12 N.O. 13,2 kV", current_A: 98, kv: 13.2 },
@@ -952,7 +956,8 @@ const ET_DATA = [
     ],
     interconnects: ["ET Sarmiento"]
   },
-  { name: "CD N°24", lat: -27.4804, lon: -58.8472, power_mw: 10.9, load_pct: 57.4, total_mva: 20, tension_kv: 33,
+  // gpkg ADefinir.gpkg fid=23 (nset "CD 24 - 1000 Viv."): corrige ~2,6 km. Revisar.
+  { name: "CD N°24", lat: -27.492769, lon: -58.824135, power_mw: 10.9, load_pct: 57.4, total_mva: 20, tension_kv: 33,
     feeders: [
       { name: "Alimentador Empedrado - CD24 33 kV", current_A: 174, kv: 33 },
       { name: "Distribuidor B°Mil Viviendas 13,2 kV", current_A: 158, kv: 13.2 },
@@ -962,7 +967,7 @@ const ET_DATA = [
     ],
     interconnects: ["ET Santa Catalina"]
   },
-  { name: "CD N°25", lat: -27.4916, lon: -58.8189, power_mw: 12.1, load_pct: 84.6, total_mva: 15, tension_kv: 33,
+  { name: "CD N°25", lat: -27.496078, lon: -58.815412, power_mw: 12.1, load_pct: 84.6, total_mva: 15, tension_kv: 33,
     feeders: [
       { name: "Alimentador Molina Punta - CD25 33 kV", current_A: 193, kv: 33 },
       { name: "Distribuidor Av. Gobernador Pujol 13,2 kV", current_A: 175, kv: 13.2 },
@@ -972,7 +977,8 @@ const ET_DATA = [
     ],
     interconnects: ["ET Corrientes Este", "ET Corrientes Centro"]
   },
-  { name: "CD N°26", lat: -27.4727, lon: -58.8424, power_mw: 6.3, load_pct: 66.3, total_mva: 10, tension_kv: 33,
+  // gpkg trafo_33kV.gpkg fid=3 (nset "CD 26 - B. San Jose", estado 4): corrige ~4,5 km. Revisar.
+  { name: "CD N°26", lat: -27.479914, lon: -58.797105, power_mw: 6.3, load_pct: 66.3, total_mva: 10, tension_kv: 33,
     feeders: [
       { name: "Alimentador Av. Ferré N. 33 kV", current_A: 100, kv: 33 },
       { name: "Distribuidor B°Ciudad Universitaria 13,2 kV", current_A: 88, kv: 13.2 },
@@ -980,7 +986,7 @@ const ET_DATA = [
     ],
     interconnects: ["ET Sarmiento"]
   },
-  { name: "CD N°27", lat: -27.47, lon: -58.8424, power_mw: 11.6, load_pct: 81.2, total_mva: 15, tension_kv: 33,
+  { name: "CD N°27", lat: -27.460934, lon: -58.834089, power_mw: 11.6, load_pct: 81.2, total_mva: 15, tension_kv: 33,
     feeders: [
       { name: "Alimentador Independencia 2 - CD27 33 kV", current_A: 185, kv: 33 },
       { name: "Distribuidor B°San Martín Sur 13,2 kV", current_A: 167, kv: 13.2 },
@@ -990,7 +996,7 @@ const ET_DATA = [
     ],
     interconnects: ["ET Santa Catalina"]
   },
-  { name: "CD N°28", lat: -27.521, lon: -58.8112, power_mw: 4.1, load_pct: 28.7, total_mva: 15, tension_kv: 33,
+  { name: "CD N°28", lat: -27.52096701, lon: -58.81120184, power_mw: 4.1, load_pct: 28.7, total_mva: 15, tension_kv: 33,
     feeders: [
       { name: "Alimentador Sur 33 kV", current_A: 65, kv: 33 },
       { name: "Distribuidor Av. Cambá Cuá 13,2 kV", current_A: 58, kv: 13.2 },
@@ -1002,7 +1008,8 @@ const ET_DATA = [
   },
 
   // ── Interior de la Provincia ──────────────────
-  { name: "ET Bella Vista", lat: -28.505, lon: -58.748, power_mw: 43.9, load_pct: 89.6, total_mva: 52.5, tension_kv: 132,
+  // gpkg trafo_13_2kV.gpkg fid=76 (ub "Et Transnea Bella Vista.", loc BELLA VISTA): corrige ~26 km; la posicion anterior no coincide con ninguna fila de Bella Vista. Revisar.
+  { name: "ET Bella Vista", lat: -28.50712414, lon: -59.01890971, power_mw: 43.9, load_pct: 89.6, total_mva: 52.5, tension_kv: 132,
     feeders: [
       { name: "Alimentador Desmochado 33 kV", current_A: 238, kv: 33 },
       { name: "Alimentador San Roque 33 kV", current_A: 115, kv: 33 },
@@ -1015,7 +1022,7 @@ const ET_DATA = [
     ],
     interconnects: ["ET Empedrado", "ET Bella Vista Sur", "ET San Roque", "ET Mburucuya"]
   },
-  { name: "ET Bella Vista Sur", lat: -28.5234, lon: -59.0453, power_mw: 8.8, load_pct: 92.6, total_mva: 10, tension_kv: 33,
+  { name: "ET Bella Vista Sur", lat: -28.5234179, lon: -59.04529118, power_mw: 8.8, load_pct: 92.6, total_mva: 10, tension_kv: 33,
     feeders: [
       { name: "Alimentador Salida 33 kV", current_A: 87, kv: 33 },
       { name: "Distribuidor 1 13,2 kV", current_A: 175, kv: 13.2 },
@@ -1024,7 +1031,8 @@ const ET_DATA = [
     ],
     interconnects: ["ET Bella Vista"]
   },
-  { name: "ET Goya", lat: -29.1427, lon: -59.2568, power_mw: 53.3, load_pct: 62.3, total_mva: 90, tension_kv: 132,
+  // No hay fila ET con nombre "Goya": la coincidencia exacta es ADefinir.gpkg fid=13 (nset "CD - 2", tipo CD, Av. Rolon y Reconquista). Revisar.
+  { name: "ET Goya", lat: -29.14267619, lon: -59.25682073, power_mw: 53.3, load_pct: 62.3, total_mva: 90, tension_kv: 132,
     feeders: [
       { name: "Alimentador Desmochado 132 kV", current_A: 95, kv: 132 },
       { name: "Alimentador Carolina 33 kV", current_A: 142, kv: 33 },
@@ -1041,7 +1049,7 @@ const ET_DATA = [
     ],
     interconnects: ["ET Goya Oeste", "ET Goya Norte", "ET Carolina (Goya)", "ET Parque Industrial (Goya)", "ET Ex Central Diesel (Goya)", "ET Esquina"]
   },
-  { name: "ET Goya Oeste", lat: -29.1714, lon: -59.2926, power_mw: 19.7, load_pct: 69.1, total_mva: 15, tension_kv: 33,
+  { name: "ET Goya Oeste", lat: -29.17265898, lon: -59.28072945, power_mw: 19.7, load_pct: 69.1, total_mva: 15, tension_kv: 33,
     feeders: [
       { name: "Alimentador Goya Oeste 33 kV", current_A: 140, kv: 33 },
       { name: "Distribuidor B°Hipólito Irigoyen 13,2 kV", current_A: 178, kv: 13.2 },
@@ -1050,7 +1058,7 @@ const ET_DATA = [
     ],
     interconnects: ["ET Goya", "ET Carolina (Goya)"]
   },
-  { name: "ET Goya Norte", lat: -29.1309, lon: -59.2599, power_mw: 8.2, load_pct: 57.3, total_mva: 15, tension_kv: 33,
+  { name: "ET Goya Norte", lat: -29.13089686, lon: -59.2598562, power_mw: 8.2, load_pct: 57.3, total_mva: 15, tension_kv: 33,
     feeders: [
       { name: "Alimentador Goya Norte 33 kV", current_A: 68, kv: 33 },
       { name: "Distribuidor Industrial 13,2 kV", current_A: 110, kv: 13.2 },
@@ -1059,24 +1067,25 @@ const ET_DATA = [
     ],
     interconnects: ["ET Goya"]
   },
-  { name: "ET Carolina (Goya)", lat: -29.1623, lon: -59.2484, power_mw: 2.0, load_pct: 42.6, total_mva: 5, tension_kv: 33,
+  // Asignada a trafo_33kV.gpkg fid=45 (tipo ET, loc COLONIA CAROLINA, ub "E.T. Col. Carolina"). Dudas: ADefinir.gpkg fid=40 ("Colonia Carolina.", -29.1389812,-59.2270479) y la posicion anterior (SETEN del Pque. Industrial Goya, cd "ET. Transnea Col. Carolina", ~-29.1623,-59.2484). Revisar a mano.
+  { name: "ET Carolina (Goya)", lat: -29.14336667, lon: -59.17538333, power_mw: 2.0, load_pct: 42.6, total_mva: 5, tension_kv: 33,
     feeders: [
       { name: "Distribuidor B°Carolina 13,2 kV", current_A: 87, kv: 13.2 },
       { name: "Distribuidor Rural Carolina 13,2 kV", current_A: 54, kv: 13.2 }
     ],
     interconnects: ["ET Goya Oeste"]
   },
-  { name: "ET Parque Industrial (Goya)", lat: -29.1628, lon: -59.2469, power_mw: 0.9, load_pct: 39.1, total_mva: 2.5, tension_kv: 33,
+  { name: "ET Parque Industrial (Goya)", lat: -29.16283719, lon: -59.24685608, power_mw: 0.9, load_pct: 39.1, total_mva: 2.5, tension_kv: 33,
     feeders: [
       { name: "Distribuidor Parque Industrial 13,2 kV", current_A: 48, kv: 13.2 }
     ],
     interconnects: ["ET Goya"]
   },
-  { name: "ET Ex Central Diesel (Goya)", lat: -29.1625, lon: -59.2862, power_mw: null, load_pct: null, total_mva: null, tension_kv: 33,
+  { name: "ET Ex Central Diesel (Goya)", lat: -29.16253, lon: -59.2862, power_mw: null, load_pct: null, total_mva: null, tension_kv: 33,
     feeders: [],
     interconnects: ["ET Goya", "ET Goya Oeste"]
   },
-  { name: "ET Esquina", lat: -30.0173, lon: -59.536, power_mw: 19.1, load_pct: 67.1, total_mva: 30, tension_kv: 132,
+  { name: "ET Esquina", lat: -30.00973919, lon: -59.53258879, power_mw: 19.1, load_pct: 67.1, total_mva: 30, tension_kv: 132,
     feeders: [
       { name: "Alimentador Libertador 33 kV", current_A: 152, kv: 33 },
       { name: "Alimentador Sauce 33 kV", current_A: 89, kv: 33 },
@@ -1087,7 +1096,8 @@ const ET_DATA = [
     ],
     interconnects: ["ET Goya", "ET Sauce", "ET Stella Maris"]
   },
-  { name: "ET Stella Maris", lat: -30.08, lon: -59.47, power_mw: 2.9, load_pct: 40.0, total_mva: 7.5, tension_kv: 33,
+  // gpkg ADefinir.gpkg fid=39 (ub "E.T. Stella Maris.", loc SAN ISIDRO) + 80 SETA del grupo "ET/CD Stella Maris" (~-29.4/-29.5, -59.3): corrige ~61 km; la posicion anterior no tiene respaldo en los gpkg. Revisar.
+  { name: "ET Stella Maris", lat: -29.54675712, lon: -59.3231394, power_mw: 2.9, load_pct: 40.0, total_mva: 7.5, tension_kv: 33,
     feeders: [
       { name: "Distribuidor 1 13,2 kV", current_A: 53, kv: 13.2 },
       { name: "Distribuidor 2 13,2 kV", current_A: 58, kv: 13.2 },
@@ -1095,14 +1105,15 @@ const ET_DATA = [
     ],
     interconnects: ["ET Esquina"]
   },
-  { name: "ET Sauce", lat: -30.0934, lon: -58.8222, power_mw: 4.1, load_pct: 87.2, total_mva: 5, tension_kv: 33,
+  { name: "ET Sauce", lat: -30.08801521, lon: -58.79468441, power_mw: 4.1, load_pct: 87.2, total_mva: 5, tension_kv: 33,
     feeders: [
       { name: "Distribuidor 1 13,2 kV", current_A: 93, kv: 13.2 },
       { name: "Distribuidor 2 13,2 kV", current_A: 56, kv: 13.2 }
     ],
     interconnects: ["ET Esquina"]
   },
-  { name: "ET Mercedes", lat: -29.0972, lon: -58.3300, power_mw: 41.2, load_pct: 72.3, total_mva: 60, tension_kv: 132,
+  // gpkg trafo_132kV.gpkg fid=3 (nset "ET CD MERCEDES", ub "Et 132 Kv Mercedes."); la ciudad de Mercedes esta en ~-29.184,-58.075. La posicion anterior era el ER "Paso Pucheta", ~25 km al SO. Revisar.
+  { name: "ET Mercedes", lat: -29.18075185, lon: -58.093981, power_mw: 41.2, load_pct: 72.3, total_mva: 60, tension_kv: 132,
     feeders: [
       { name: "Alimentador Santa Rosa 33 kV", current_A: 178, kv: 33 },
       { name: "Alimentador San Roque 33 kV", current_A: 134, kv: 33 },
@@ -1119,7 +1130,8 @@ const ET_DATA = [
     ],
     interconnects: ["ET Pellegrini", "ET Santa Rosa", "ET Concepcion", "ET Mburucuya", "ET San Roque", "ET Paso Tala"]
   },
-  { name: "CD Mercedes", lat: -29.1321, lon: -58.1705, power_mw: 8.6, load_pct: 95.6, total_mva: null, tension_kv: 33,
+  // Sin fila tipo CD para Mercedes: se mantiene la fila exacta trafo_33kV.gpkg fid=27 (tipo ER, cd "ET MERCEDES", ub "Est.Rebaje_ Payubre Ruta 123"). Revisar.
+  { name: "CD Mercedes", lat: -29.13213333, lon: -58.17053333, power_mw: 8.6, load_pct: 95.6, total_mva: null, tension_kv: 33,
     feeders: [
       { name: "Alimentador CD Mercedes 33 kV", current_A: 137, kv: 33 },
       { name: "Distribuidor Ciudad Norte 13,2 kV", current_A: 185, kv: 13.2 },
@@ -1129,13 +1141,14 @@ const ET_DATA = [
     ],
     interconnects: ["ET Mercedes"]
   },
-  { name: "ET Pellegrini", lat: -28.5834, lon: -57.2349, power_mw: 0.7, load_pct: 30.4, total_mva: 2.5, tension_kv: 33,
+  { name: "ET Pellegrini", lat: -28.58342586, lon: -57.23493536, power_mw: 0.7, load_pct: 30.4, total_mva: 2.5, tension_kv: 33,
     feeders: [
       { name: "Distribuidor Pellegrini 13,2 kV", current_A: 28, kv: 13.2 }
     ],
     interconnects: ["ET Mercedes"]
   },
-  { name: "ET Curuzu Cuatia", lat: -29.804, lon: -58.1345, power_mw: 31.8, load_pct: 74.5, total_mva: 45, tension_kv: 132,
+  // gpkg ADefinir.gpkg fid=51 (nset "ET: Curuzu Cuatia 132-33-13,2"). Nota: la posicion anterior de esta ET estaba sobre la fila "ET BELGRANO". Revisar.
+  { name: "ET Curuzu Cuatia", lat: -29.7939708, lon: -58.07939777, power_mw: 31.8, load_pct: 74.5, total_mva: 45, tension_kv: 132,
     feeders: [
       { name: "Alimentador Belgrano 33 kV", current_A: 154, kv: 33 },
       { name: "Alimentador Mocoreta 33 kV", current_A: 89, kv: 33 },
@@ -1149,14 +1162,16 @@ const ET_DATA = [
     ],
     interconnects: ["ET Belgrano (Curuzu Cuatia)", "ET Monte Caseros", "ET Paso Tala", "ET Mocoreta"]
   },
-  { name: "ET Belgrano (Curuzu Cuatia)", lat: -29.794, lon: -58.0794, power_mw: 6.5, load_pct: 45.5, total_mva: 15, tension_kv: 33,
+  // gpkg ADefinir.gpkg fid=705 (nset "ET BELGRANO", Montecaseros y Las Heras). Nota: la posicion anterior coincidia con la fila "ET: Curuzu Cuatia 132-33-13,2". Revisar.
+  { name: "ET Belgrano (Curuzu Cuatia)", lat: -29.78509846, lon: -58.06586839, power_mw: 6.5, load_pct: 45.5, total_mva: 15, tension_kv: 33,
     feeders: [
       { name: "Distribuidor B°Belgrano 13,2 kV", current_A: 114, kv: 13.2 },
       { name: "Distribuidor Industrial Curuzu 13,2 kV", current_A: 78, kv: 13.2 }
     ],
     interconnects: ["ET Curuzu Cuatia"]
   },
-  { name: "ET Monte Caseros", lat: -30.2556, lon: -57.6588, power_mw: 30.7, load_pct: 71.9, total_mva: 45, tension_kv: 132,
+  // gpkg trafo_13_2kV.gpkg fid=79 (nset "ET CD MONTE CASEROS TRANSNEA"). Nota: la posicion anterior coincidia con la fila nset "ET TN&PLATEX". Revisar.
+  { name: "ET Monte Caseros", lat: -30.24785, lon: -57.668172, power_mw: 30.7, load_pct: 71.9, total_mva: 45, tension_kv: 132,
     feeders: [
       { name: "Alimentador TN&Platex 33 kV", current_A: 135, kv: 33 },
       { name: "Alimentador Mocoreta 33 kV", current_A: 98, kv: 33 },
@@ -1169,14 +1184,16 @@ const ET_DATA = [
     ],
     interconnects: ["ET TN&Platex (Monte Caseros)", "ET Parada Pucheta", "ET Curuzu Cuatia", "ET Paso de los Libres Sur"]
   },
-  { name: "ET TN&Platex (Monte Caseros)", lat: -30.2556, lon: -57.6264, power_mw: 5.2, load_pct: 57.8, total_mva: 10, tension_kv: 33,
+  // gpkg trafo_33kV.gpkg fid=60 (nset "ET TN&PLATEX", Juan Pujol). Nota: la posicion anterior se aproximaba a la fila "ET.CD: 33-13,2 -Paso de los Higos" (-30.25224731,-57.62638377). Revisar.
+  { name: "ET TN&Platex (Monte Caseros)", lat: -30.25561392, lon: -57.65882181, power_mw: 5.2, load_pct: 57.8, total_mva: 10, tension_kv: 33,
     feeders: [
       { name: "Distribuidor TN&Platex 13,2 kV", current_A: 95, kv: 13.2 },
       { name: "Distribuidor Ind. Frigorífico 13,2 kV", current_A: 68, kv: 13.2 }
     ],
     interconnects: ["ET Monte Caseros"]
   },
-  { name: "ET Paso de los Libres Sur", lat: -29.6364, lon: -57.2661, power_mw: 19.5, load_pct: 68.4, total_mva: 30, tension_kv: 132,
+  // gpkg trafo_33kV.gpkg fid=64 (cd "E.T. LIBRES SUR", ub "Provisoria Del Parque Industrial Paso De Los Libres."): corrige ~11 km. Revisar.
+  { name: "ET Paso de los Libres Sur", lat: -29.71734085, lon: -57.202298, power_mw: 19.5, load_pct: 68.4, total_mva: 30, tension_kv: 132,
     feeders: [
       { name: "Alimentador Libres Norte 33 kV", current_A: 152, kv: 33 },
       { name: "Alimentador Parada Pucheta 33 kV", current_A: 89, kv: 33 },
@@ -1188,7 +1205,7 @@ const ET_DATA = [
     ],
     interconnects: ["ET Paso de los Libres Norte", "ET Parada Pucheta", "ET Monte Caseros"]
   },
-  { name: "ET Paso de los Libres Norte", lat: -29.6911, lon: -57.1209, power_mw: 14.0, load_pct: 49.1, total_mva: 30, tension_kv: 132,
+  { name: "ET Paso de los Libres Norte", lat: -29.6911368, lon: -57.12086063, power_mw: 14.0, load_pct: 49.1, total_mva: 30, tension_kv: 132,
     feeders: [
       { name: "Alimentador Libres Sur 33 kV", current_A: 112, kv: 33 },
       { name: "Distribuidor Ciudad Norte 13,2 kV", current_A: 155, kv: 13.2 },
@@ -1198,14 +1215,14 @@ const ET_DATA = [
     ],
     interconnects: ["ET Paso de los Libres Sur"]
   },
-  { name: "ET Parada Pucheta", lat: -29.9103, lon: -57.6097, power_mw: 2.4, load_pct: 33.1, total_mva: 7.5, tension_kv: 33,
+  { name: "ET Parada Pucheta", lat: -29.9102704, lon: -57.60973019, power_mw: 2.4, load_pct: 33.1, total_mva: 7.5, tension_kv: 33,
     feeders: [
       { name: "Distribuidor Pucheta 1 13,2 kV", current_A: 52, kv: 13.2 },
       { name: "Distribuidor Pucheta 2 13,2 kV", current_A: 37, kv: 13.2 }
     ],
     interconnects: ["ET Monte Caseros", "ET Paso de los Libres Sur"]
   },
-  { name: "ET Mocoreta", lat: -30.5753, lon: -58.0038, power_mw: 8.3, load_pct: 29.1, total_mva: 30, tension_kv: 33,
+  { name: "ET Mocoreta", lat: -30.59345072, lon: -57.9793523, power_mw: 8.3, load_pct: 29.1, total_mva: 30, tension_kv: 33,
     feeders: [
       { name: "Alimentador Mocoreta Norte 33 kV", current_A: 65, kv: 33 },
       { name: "Distribuidor Pueblo 13,2 kV", current_A: 114, kv: 13.2 },
@@ -1215,7 +1232,8 @@ const ET_DATA = [
     ],
     interconnects: ["ET Curuzu Cuatia", "ET Monte Caseros"]
   },
-  { name: "ET Virasoro", lat: -28.0164, lon: -56.0191, power_mw: 23.5, load_pct: 82.5, total_mva: 30, tension_kv: 132,
+  // gpkg trafo_132kV.gpkg fid=6 (nset "E.T. VIRASORO", ub "Et 132 Kv Virasoro."): la posicion anterior coincidia con un SETEN de aserraderos (grupo VIRASORO TRASNEA). Revisar.
+  { name: "ET Virasoro", lat: -28.06366954, lon: -56.01441686, power_mw: 23.5, load_pct: 82.5, total_mva: 30, tension_kv: 132,
     feeders: [
       { name: "Alimentador Virasoro Norte 33 kV", current_A: 185, kv: 33 },
       { name: "Alimentador Las Acacias 33 kV", current_A: 42, kv: 33 },
@@ -1230,21 +1248,22 @@ const ET_DATA = [
     ],
     interconnects: ["ET Virasoro Norte", "ET Las Acacias", "ET Acon Timber", "ET Santo Tome"]
   },
-  { name: "CD Virasoro", lat: -28.025, lon: -56.022, power_mw: 5.5, load_pct: 57.9, total_mva: 10, tension_kv: 33,
+  // Asignada a ADefinir.gpkg fid=706 (nset "ET CD 1 VIRASORO"; su grupo de SETA es "Centro distribucion 1"); no existe fila CD en Virasoro. Corrige ~3,4 km. Revisar.
+  { name: "CD Virasoro", lat: -28.05552913, lon: -56.02070875, power_mw: 5.5, load_pct: 57.9, total_mva: 10, tension_kv: 33,
     feeders: [
       { name: "Alimentador CD Virasoro 1 33 kV", current_A: 88, kv: 33 },
       { name: "Distribuidor B°Industrial 13,2 kV", current_A: 135, kv: 13.2 }
     ],
     interconnects: ["ET Virasoro"]
   },
-  { name: "ET Virasoro Norte", lat: -27.9479, lon: -56.002, power_mw: 16.9, load_pct: 59.3, total_mva: 30, tension_kv: 33,
+  { name: "ET Virasoro Norte", lat: -27.94789331, lon: -56.00196872, power_mw: 16.9, load_pct: 59.3, total_mva: 30, tension_kv: 33,
     feeders: [
       { name: "Alimentador Virasoro Sur 33 kV", current_A: 135, kv: 33 },
       { name: "Distribuidor Norte 13,2 kV", current_A: 118, kv: 13.2 }
     ],
     interconnects: ["ET Virasoro"]
   },
-  { name: "ET Las Acacias", lat: -28.0356, lon: -56.0151, power_mw: 1.8, load_pct: 12.6, total_mva: 15, tension_kv: 33,
+  { name: "ET Las Acacias", lat: -28.03564865, lon: -56.01508559, power_mw: 1.8, load_pct: 12.6, total_mva: 15, tension_kv: 33,
     feeders: [
       { name: "Distribuidor Las Acacias 1 13,2 kV", current_A: 58, kv: 13.2 },
       { name: "Distribuidor Las Acacias 2 13,2 kV", current_A: 42, kv: 13.2 },
@@ -1252,13 +1271,14 @@ const ET_DATA = [
     ],
     interconnects: ["ET Virasoro"]
   },
-  { name: "ET Acon Timber", lat: -27.9445, lon: -56.0222, power_mw: 0.8, load_pct: 8.4, total_mva: 10, tension_kv: 33,
+  // Coincidencia exacta con trafo_33kV.gpkg fid=931 (SETEN, ub "acotimber", cd "virasoro norte"). Revisar si corresponde.
+  { name: "ET Acon Timber", lat: -27.94453421, lon: -56.02219526, power_mw: 0.8, load_pct: 8.4, total_mva: 10, tension_kv: 33,
     feeders: [
       { name: "Distribuidor Acon Timber 13,2 kV", current_A: 25, kv: 13.2 }
     ],
     interconnects: ["ET Virasoro Norte"]
   },
-  { name: "ET La Cruz", lat: -29.1689, lon: -56.6611, power_mw: 10.7, load_pct: 74.8, total_mva: 15, tension_kv: 33,
+  { name: "ET La Cruz", lat: -29.1632744, lon: -56.66095536, power_mw: 10.7, load_pct: 74.8, total_mva: 15, tension_kv: 33,
     feeders: [
       { name: "Alimentador La Cruz N 33 kV", current_A: 85, kv: 33 },
       { name: "Distribuidor Ciudad 1 13,2 kV", current_A: 155, kv: 13.2 },
@@ -1269,14 +1289,14 @@ const ET_DATA = [
     ],
     interconnects: ["ET Yapeyu", "ET Alvear", "ET Paso de los Libres Norte"]
   },
-  { name: "ET Yapeyu", lat: -29.4214, lon: -56.8393, power_mw: 2.2, load_pct: 30.4, total_mva: 7.5, tension_kv: 33,
+  { name: "ET Yapeyu", lat: -29.42137419, lon: -56.83928462, power_mw: 2.2, load_pct: 30.4, total_mva: 7.5, tension_kv: 33,
     feeders: [
       { name: "Distribuidor Guaviravi 13,2 kV", current_A: 27, kv: 13.2 },
       { name: "Distribuidor Yapeyu 13,2 kV", current_A: 59, kv: 13.2 }
     ],
     interconnects: ["ET La Cruz", "ET Alvear"]
   },
-  { name: "ET Alvear", lat: -29.0852, lon: -56.5607, power_mw: 4.1, load_pct: 87.2, total_mva: 5, tension_kv: 33,
+  { name: "ET Alvear", lat: -29.08521274, lon: -56.56071222, power_mw: 4.1, load_pct: 87.2, total_mva: 5, tension_kv: 33,
     feeders: [
       { name: "Distribuidor Alvear 1 13,2 kV", current_A: 75, kv: 13.2 },
       { name: "Distribuidor Alvear 2 13,2 kV", current_A: 90, kv: 13.2 },
@@ -1284,7 +1304,8 @@ const ET_DATA = [
     ],
     interconnects: ["ET La Cruz", "ET Yapeyu"]
   },
-  { name: "ET Santo Tome", lat: -28.4329, lon: -56.4608, power_mw: 16.2, load_pct: 56.9, total_mva: 30, tension_kv: 132,
+  // gpkg ADefinir.gpkg fid=63 (nset "ET Santo Tome"): corrige ~40 km (pueblo y SETA "SANTO TOME" en ~-28.55,-56.07). Revisar.
+  { name: "ET Santo Tome", lat: -28.550136, lon: -56.072652, power_mw: 16.2, load_pct: 56.9, total_mva: 30, tension_kv: 132,
     feeders: [
       { name: "Alimentador 1 CD 33 kV", current_A: 154, kv: 33 },
       { name: "Alimentador Linea vieja 33 kV", current_A: 6, kv: 33 },
@@ -1296,7 +1317,8 @@ const ET_DATA = [
     ],
     interconnects: ["ET Virasoro", "ET San Carlos", "CD Santo Tome"]
   },
-  { name: "CD Santo Tome", lat: -28.56, lon: -56.04, power_mw: 8.4, load_pct: 58.8, total_mva: 15, tension_kv: 33,
+  // Unica fila tipo CD en loc SANTO TOME: trafo_33kV.gpkg fid=7 (ub "Centro Distribucion.", nset "0"): corrige ~0,9 km. Revisar.
+  { name: "CD Santo Tome", lat: -28.5651, lon: -56.033, power_mw: 8.4, load_pct: 58.8, total_mva: 15, tension_kv: 33,
     feeders: [
       { name: "Alimentador CD Sto. Tome 33 kV", current_A: 134, kv: 33 },
       { name: "Distribuidor B°Mihanovich 13,2 kV", current_A: 148, kv: 13.2 },
@@ -1304,7 +1326,7 @@ const ET_DATA = [
     ],
     interconnects: ["ET Santo Tome"]
   },
-  { name: "ET San Carlos", lat: -27.752, lon: -55.9038, power_mw: 2.4, load_pct: 51.1, total_mva: 5, tension_kv: 33,
+  { name: "ET San Carlos", lat: -27.75198436, lon: -55.9038887, power_mw: 2.4, load_pct: 51.1, total_mva: 5, tension_kv: 33,
     feeders: [
       { name: "Distribuidor 1 13,2 kV", current_A: 51, kv: 13.2 },
       { name: "Distribuidor 2 13,2 kV", current_A: 3, kv: 13.2 },
@@ -1312,7 +1334,7 @@ const ET_DATA = [
     ],
     interconnects: ["ET Santo Tome"]
   },
-  { name: "ET Ituzaingo Norte", lat: -27.5079, lon: -56.6783, power_mw: 19.3, load_pct: 67.7, total_mva: 30, tension_kv: 132,
+  { name: "ET Ituzaingo Norte", lat: -27.56814667, lon: -56.6633757, power_mw: 19.3, load_pct: 67.7, total_mva: 30, tension_kv: 132,
     feeders: [
       { name: "Alimentador 1 (CD2) 33 kV", current_A: 195, kv: 33 },
       { name: "Alimentador 2 (CD1) 33 kV", current_A: 87, kv: 33 },
@@ -1323,7 +1345,7 @@ const ET_DATA = [
     ],
     interconnects: ["ET Parque Industrial Ituzaingo", "CD N°2 (Ituzaingo)"]
   },
-  { name: "ET Parque Industrial Ituzaingo", lat: -27.6308, lon: -56.9281, power_mw: 3.6, load_pct: 25.2, total_mva: 15, tension_kv: 33,
+  { name: "ET Parque Industrial Ituzaingo", lat: -27.63249399, lon: -56.85111822, power_mw: 3.6, load_pct: 25.2, total_mva: 15, tension_kv: 33,
     feeders: [
       { name: "Alimentador 1 Biomasa termoelec. 33 kV", current_A: 4, kv: 33 },
       { name: "Distribuidor 1 Villa Olivari 13,2 kV", current_A: 48, kv: 13.2 },
@@ -1333,7 +1355,7 @@ const ET_DATA = [
     ],
     interconnects: ["ET Ituzaingo Norte"]
   },
-  { name: "CD N°2 (Ituzaingo)", lat: -27.583, lon: -56.694, power_mw: 10.7, load_pct: 74.8, total_mva: 15, tension_kv: 33,
+  { name: "CD N°2 (Ituzaingo)", lat: -27.59422641, lon: -56.69215599, power_mw: 10.7, load_pct: 74.8, total_mva: 15, tension_kv: 33,
     feeders: [
       { name: "Alimentador CD2 Ituzaingo 33 kV", current_A: 171, kv: 33 },
       { name: "Distribuidor Ciudad 1 Ituzaingo 13,2 kV", current_A: 152, kv: 13.2 },
@@ -1342,7 +1364,7 @@ const ET_DATA = [
     ],
     interconnects: ["ET Ituzaingo Norte"]
   },
-  { name: "ET Ita Ibate", lat: -27.4465, lon: -57.337, power_mw: 24.0, load_pct: 84.2, total_mva: 30, tension_kv: 132,
+  { name: "ET Ita Ibate", lat: -27.44645388, lon: -57.3370927, power_mw: 24.0, load_pct: 84.2, total_mva: 30, tension_kv: 132,
     feeders: [
       { name: "Alimentador Caa Cati 33 kV", current_A: 113, kv: 33 },
       { name: "Alimentador 2 33 kV", current_A: 184, kv: 33 },
@@ -1352,15 +1374,16 @@ const ET_DATA = [
     ],
     interconnects: ["ET Pirayu", "ET San Luis del Palmar"]
   },
-  { name: "ET Paso Tala", lat: -29.2449, lon: -58.7327, power_mw: 4.6, load_pct: 48.4, total_mva: 10, tension_kv: 33,
+  { name: "ET Paso Tala", lat: -29.24488333, lon: -58.73268333, power_mw: 4.6, load_pct: 48.4, total_mva: 10, tension_kv: 33,
     feeders: [],
     interconnects: ["ET Curuzu Cuatia", "ET Mercedes"]
   },
-  { name: "ET Brugne", lat: -28.1051, lon: -58.7744, power_mw: 24.4, load_pct: 85.6, total_mva: 30, tension_kv: 33,
+  { name: "ET Brugne", lat: -28.09448897, lon: -58.77892393, power_mw: 24.4, load_pct: 85.6, total_mva: 30, tension_kv: 33,
     feeders: [],
     interconnects: ["ET Bella Vista", "ET San Roque", "ET Saladas"]
   },
-  { name: "ET Santa Rosa", lat: -28.2323, lon: -58.0694, power_mw: 6.6, load_pct: 69.5, total_mva: 10, tension_kv: 33,
+  // Sin fila ET con nombre "Santa Rosa" (la fila ET "ET: Parque Industrial Santa Rosa" esta en -28.23839275,-58.06432195): se mantuvo la coincidencia exacta trafo_13_2kV.gpkg fid=5876 (SETEN, cd "SANTA ROSA PQUE.IND."). Revisar.
+  { name: "ET Santa Rosa", lat: -28.23228185, lon: -58.06937052, power_mw: 6.6, load_pct: 69.5, total_mva: 10, tension_kv: 33,
     feeders: [
       { name: "Distribuidor Santa Rosa 1 13,2 kV", current_A: 105, kv: 13.2 },
       { name: "Distribuidor Santa Rosa 2 13,2 kV", current_A: 88, kv: 13.2 },
@@ -1368,7 +1391,7 @@ const ET_DATA = [
     ],
     interconnects: ["ET Mercedes", "ET Parque Industrial Santa Rosa", "ET Concepcion"]
   },
-  { name: "ET Parque Industrial Santa Rosa", lat: -28.2386, lon: -58.0643, power_mw: 1.8, load_pct: 12.6, total_mva: 15, tension_kv: 33,
+  { name: "ET Parque Industrial Santa Rosa", lat: -28.23839275, lon: -58.06432195, power_mw: 1.8, load_pct: 12.6, total_mva: 15, tension_kv: 33,
     feeders: [
       { name: "Alimentador Concepcion 33 kV", current_A: 48, kv: 33 }
     ],
@@ -1381,7 +1404,7 @@ const ET_DATA = [
     ],
     interconnects: ["ET Santa Rosa", "ET Mburucuya"]
   },
-  { name: "ET Mburucuya", lat: -28.0285, lon: -58.2270, power_mw: 5.8, load_pct: 61.1, total_mva: 10, tension_kv: 33,
+  { name: "ET Mburucuya", lat: -28.04430798, lon: -58.22855133, power_mw: 5.8, load_pct: 61.1, total_mva: 10, tension_kv: 33,
     feeders: [
       { name: "Distribuidor Urbana 1 13,2 kV", current_A: 93, kv: 13.2 },
       { name: "Distribuidor Urbana 2 13,2 kV", current_A: 115, kv: 13.2 },
@@ -1390,7 +1413,8 @@ const ET_DATA = [
     ],
     interconnects: ["ET Mercedes", "ET Concepcion"]
   },
-  { name: "ET San Roque", lat: -28.5847, lon: -58.7069, power_mw: 4.1, load_pct: 87.2, total_mva: 5, tension_kv: 33,
+  // Sin fila ET/CD con nombre "San Roque": se usó trafo_33kV.gpkg fid=886 (SETIN, loc SAN ROQUE, ub "Estacion Transformadora."). Alternativas: SETEN (-28.5909,-58.7223) y mediana de SETA cd="SAN ROQUE" ~(-28.5863,-58.7133); la posicion anterior era ~-28.5847,-58.7069. Revisar a mano.
+  { name: "ET San Roque", lat: -28.568, lon: -58.703, power_mw: 4.1, load_pct: 87.2, total_mva: 5, tension_kv: 33,
     feeders: [
       { name: "Alimentador Mantilla 33 kV", current_A: 29, kv: 33 },
       { name: "Distribuidor Rural 13,2 kV", current_A: 39, kv: 13.2 },
